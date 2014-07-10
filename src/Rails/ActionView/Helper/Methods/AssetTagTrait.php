@@ -210,8 +210,8 @@ trait AssetTagTrait
                     $file = $assets->findFile($source);
                     
                     if (!$file) {
-                        $this->compileAssetFile($file->url());
-                        $this->appendAssetTag($file->url(), $type, $builder, $options, true, $tags);
+                        $this->compileAssetFile($source);
+                        $this->appendAssetTag($source, $type, $builder, $options, true, $tags);
                         continue;
                     }
                     

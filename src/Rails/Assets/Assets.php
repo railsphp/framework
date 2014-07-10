@@ -67,10 +67,10 @@ class Assets
     
     public function getCompiler($type)
     {
-        if (!$compiler = $this->config['compilers']->get($type)) {
+        if (!isset($this->config['compilers'][$type])) {
             return false;
         }
-        return $compiler;
+        return $this->config['compilers'][$type];
     }
     
     /**
@@ -147,7 +147,7 @@ class Assets
     
     public function addPaths($paths)
     {
-        array_merge($this->config['paths'], (array)$paths);
+        $this->config['paths'] = array_merge($this->config['paths'], (array)$paths);
         return $this;
     }
     
@@ -159,7 +159,7 @@ class Assets
     
     public function paths()
     {
-        return $this->config['paths']->toArray();
+        return $this->config['paths'];
     }
     
     # TODO: set according to configuration. For more info read Rails api.
