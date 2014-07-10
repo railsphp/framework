@@ -25,10 +25,10 @@
         "nikic/php-parser": "0.9.4"
     },
     
-    "require-dev": {
-        "toopay/assetic-minifier": "1.3.*",
-        "leafo/scssphp": "0.0.8",
-        "coffeescript/coffeescript": "1.3.1"
+    "suggest": {
+        "toopay/assetic-minifier": "Required to minify CSS (in dev environment).",
+        "leafo/scssphp": "Required to parse SCSS (in dev environment).",
+        "coffeescript/coffeescript": "Required to parse CoffeeScript (in dev environment)."
     },
     
     "autoload": {
