@@ -10,8 +10,6 @@ class Rails
     
     protected static $root;
     
-    // protected static $publicPath;
-    
     protected static $application;
     
     protected static $booted = false;
@@ -46,10 +44,10 @@ class Rails
         return self::$root;
     }
     
-    // public static function path()
-    // {
-        // return __DIR__ . '/Rails';
-    // }
+    public static function path()
+    {
+        return __DIR__ . '/Rails';
+    }
     
     public static function setPublicPath($publicPath)
     {
