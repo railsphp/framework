@@ -30,7 +30,7 @@ class AppRenamer
         foreach ($files as $file) {
             $contents = file_get_contents($file);
             $contents = str_replace('NewApp', $appName, $contents);
-            file_put_contents($contents, $file);
+            file_put_contents($file, $contents);
         }
         
         $io->write("Application renamed.");
