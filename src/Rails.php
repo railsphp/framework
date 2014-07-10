@@ -46,10 +46,10 @@ class Rails
         return self::$root;
     }
     
-    public static function path()
-    {
-        return __DIR__;
-    }
+    // public static function path()
+    // {
+        // return __DIR__ . '/Rails';
+    // }
     
     public static function setPublicPath($publicPath)
     {
@@ -146,18 +146,19 @@ class Rails
             );
         } else {
             if (is_array($config['loader'])) {
-                require_once __DIR__ . '/Loader/Loader.php';
+                // require_once __DIR__ . '/Rails/Loader/Loader.php';
                 $loader = new Rails\Loader\Loader();
+                
                 if (isset($config['loader']['paths'])) {
-                    $loader->addPaths(array_merge(
-                        [dirname(__DIR__)],
-                        $config['loader']['paths']
-                    ));
+                    $loader->addPaths($config['loader']['paths']);
                 }
+                
                 if (isset($config['loader']['composerAutoloader'])) {
                     $loader->setComposerAutoloader(
                         $config['loader']['composerAutoloader']
                     );
+                } else {
+                    $loader->addPath(__DIR__ . '/Rails');
                 }
                 $loader->register();
             } elseif ($config['loader'] instanceof Rails\Loader\Loader) {
@@ -207,8 +208,8 @@ class Rails
             
             # Add Rails' locales paths to i18n loader
             $tr->loader()->addPaths([
-                __DIR__ . '/ActiveSupport/Carbon/locales',
-                __DIR__ . '/I18n/locales',
+                __DIR__ . '/Rails/ActiveSupport/Carbon/locales',
+                __DIR__ . '/Rails/I18n/locales',
             ]);
             
             return $tr;
