@@ -59,7 +59,7 @@ class Loader
         
         if (!$this->app->config()['serve_static_assets']) {
             $routeSet[] = BuiltRoute::fromArray(
-                Routes::assetsRoute($this->app->config()['assets']->prefix)
+                Routes::assetsRoute($this->app->config()['assets']['prefix'])
             );
         }
         
@@ -240,7 +240,7 @@ class Loader
         if ($config['active_record']['allow_profiler'] === null) {
             $allowProfiler = ($config['environment'] == 'production' || $config['environment'] == 'test');
         } else {
-            $allowProfiler = true;
+            $allowProfiler = (bool)$config['active_record']['allow_profiler'];
         }
         
         $options = [

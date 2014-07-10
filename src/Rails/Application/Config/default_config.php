@@ -14,6 +14,10 @@ $config['error'] = [
     'log' => true
 ];
 
+$config['active_record'] = [
+    'allow_profiler' => null
+];
+
 $config['action_mailer'] = [
     /**
      * Allows "sendmail", "smtp" or "file".
