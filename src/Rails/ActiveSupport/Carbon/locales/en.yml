@@ -1,0 +1,32 @@
+en:
+  activesupport:
+    carbon:
+      diff_for_humans:
+        tenses:
+          # If a language doesn't need these keys, i.e. the sentences
+          # below are complete, these keys must be declared anyway, but
+          # with no values.
+          ago: ago
+          from_now: from now
+          after: after
+          before: before
+        ago: &ago
+          less_than_a_minute: less than a minute %{t}
+          one_minute: 1 minute %{t}
+          x_minutes: "%{n} minutes %{t}"
+          about_one_hour: about one hour %{t}
+          about_x_hours: about %{n} hours %{t}
+          one_day: 1 day %{t}
+          x_days: "%{n} days %{t}"
+          about_one_month: about 1 month %{t}
+          x_months: "%{n} months %{t}"
+          about_one_year: about 1 year %{t}
+          over_a_year: over a year %{t}
+          almost_two_years: almost 2 years %{t}
+          about_x_years: about %{n} years %{t}
+        from_now:
+          <<: *ago
+        after:
+          <<: *ago
+        before:
+          <<: *ago

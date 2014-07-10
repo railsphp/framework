@@ -1,0 +1,41 @@
+es:
+  activesupport:
+    carbon:
+      diff_for_humans:
+        tenses:
+          ago: hace
+          from_now: en
+          after: después
+          before: antes
+        ago: &ago
+          less_than_a_minute: "%{t} menos de un minuto"
+          one_minute: "%{t} 1 minuto"
+          x_minutes: "%{t} %{n} minutos"
+          about_one_hour: "%{t} alrededor de una hora"
+          about_x_hours: "%{t} alrededor de %{n} horas"
+          one_day: "%{t} 1 día"
+          x_days: "%{t} %{n} días"
+          about_one_month: "%{t} alrededor de 1 mes"
+          x_months: "%{t} %{n} meses"
+          about_one_year: "%{t} alrededor de 1 año"
+          over_a_year: "%{t} más de un año"
+          almost_two_years: "%{t} casi 2 años"
+          about_x_years: "%{t} alrededor de %{n} años"
+        from_now:
+          <<: *ago
+        after: &after
+          less_than_a_minute: menos de un minuto %{t}
+          one_minute: 1 minuto %{t}
+          x_minutes: "%{n} minutos %{t}"
+          about_one_hour: alrededor de una hora %{t}
+          about_x_hours: alrededor de %{n} horas %{t}
+          one_day: 1 día %{t}
+          x_days: "%{n} días %{t}"
+          about_one_month: alrededor de 1 mes %{t}
+          x_months: "%{n} meses %{t}"
+          about_one_year: alrededor de 1 año %{t}
+          over_a_year: más de un año %{t}
+          almost_two_years: casi 2 años %{t}
+          about_x_years: alrededor de %{n} años %{t}
+        before:
+          <<: *after
