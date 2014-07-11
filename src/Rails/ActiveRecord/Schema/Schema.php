@@ -67,7 +67,7 @@ class Schema
         }
         
         if (!isset($options['id']) || !empty($options['id'])) {
-            $pk = isset($options['primary_key']) ? $options['primary_key'] : 'id';
+            $pk = isset($options['primaryKey']) ? $options['primaryKey'] : 'id';
             $td->primaryKey($pk);
         }
         
@@ -106,7 +106,7 @@ class Schema
         
         if (!empty($options['unique'])) {
             $index = new Ddl\Constraint\UniqueKey($columnName, $options['name']);
-        } elseif (!empty($options['primary_key'])) {
+        } elseif (!empty($options['primaryKey'])) {
             $index = new Constraint\PrimaryKey($columnName);
         } else {
             $index = new Constraint\IndexKey($columnName);
@@ -152,7 +152,7 @@ class Schema
                 $column = new Column\Text($name);
                 break;
             
-            // case 'primary_key':
+            // case 'primaryKey':
                 
                 // break;
             
