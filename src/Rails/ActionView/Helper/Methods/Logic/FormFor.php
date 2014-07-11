@@ -69,7 +69,7 @@ class FormFor
                 if (empty($htmlAttrs['id'])) {
                     $htmlAttrs['id'] = 'new_' . $resourceName;
                 }
-                $baseHelper->addClass($htmlAttrs['method'], 'new_' . $resourceName);
+                $baseHelper->addClass($htmlAttrs, 'new_' . $resourceName);
                 break;
             
             case 'update':
