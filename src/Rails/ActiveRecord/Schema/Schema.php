@@ -133,6 +133,10 @@ class Schema
                 $column = new Column\Text($name);
                 break;
             
+            case 'boolean':
+                $column = new Ddl\Column\Boolean($name);
+                break;
+            
             // case 'primaryKey':
                 
                 // break;

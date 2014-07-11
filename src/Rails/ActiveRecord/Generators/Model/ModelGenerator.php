@@ -29,8 +29,8 @@ class ModelGenerator extends Generator
     public function createMigration()
     {
         if ($this->opt('migration') === null) {
-            $name  = $this->app->getService('inflector')->pluralize($this->arg('name'))->toString();
-            $argv  = ['', 'Create' . $name];
+            $name  = $this->app->getService('inflector')->pluralize($this->arg('name'))->underscore();
+            $argv  = ['', 'create_' . $name];
             $input = new ArgvInput($argv);
             (new MigrationGenerator())->run($input, $this->output);
         }

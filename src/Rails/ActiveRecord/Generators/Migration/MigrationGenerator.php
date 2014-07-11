@@ -5,42 +5,49 @@ use Rails\Generator\Generator;
 
 class MigrationGenerator extends Generator
 {
-    protected $migrationFileName;
-    
     protected $migrationClassName;
+    
+    protected $migrationTemplate;
+    
+    protected $tableName;
+    
+    public function setProperties()
+    {
+        $this->migrationTemplate = 'migrations.php';
+        $fileName = $this->arg('name');
+        $inflector = \Rails::getService('inflector');
+        
+        $this->migrationClassName = $inflector->camelize($fileName);
+        
+        switch (true) {
+            // case (preg_match('/^(add|remove)_.*_(?:to|from)_(.*)/', $fileName, $m)):
+                // $this->migrationAction = $m[1];
+                // $this->tableName = $inflector->pluralize($m[2]);
+                // break;
+            
+            // case (is_int(strpos($fileName, 'join_table'))):
+                // break;
+            
+            case (strpos($fileName, 'create_') === 0):
+                $this->tableName = substr($fileName, 7);
+                $this->migrationTemplate = 'create_table_migration.php';
+                break;
+        }
+    }
     
     public function writeFile()
     {
-        $name = str_replace('/', '', $this->arg('name'));
-        
-        
-        $this->migrationFileName = trim(preg_replace_callback(
-            '/[A-Z]/',
-            function($m) {
-                return '_' . strtolower($m[0]);
-            },
-            $name
-        ), '_');
-        
-        $this->migrationClassName = ucfirst(preg_replace_callback(
-            '/(_[a-z])/',
-            function($m) {
-                return strtoupper(substr($m[0], 1));
-            },
-            $this->migrationFileName
-        ));
-        
         $this->createFile();
     }
     
     protected function filePath()
     {
-        return 'db/migrate/' . gmdate('YmdHis') . '_' . $this->migrationFileName . '.php';
+        return 'db/migrate/' . gmdate('YmdHis') . '_' . $this->arg('name') . '.php';
     }
     
     protected function template()
     {
-        return __DIR__ . '/templates/migration.php';
+        return __DIR__ . '/templates/' . $this->migrationTemplate;
     }
     
     protected function configure()
@@ -51,7 +58,20 @@ class MigrationGenerator extends Generator
             ->addArgument(
                 'name',
                 'required',
-                'Migration name (e.g. add_column_to_table, CreateUsers)'
+                'Migration name (e.g. create_users, add_column_to_table)'
+            )
+            ->addOption(
+                'timestamps',
+                't',
+                'optional',
+                'Create timestamp columns (created_at and updated_at)',
+                true
+            )
+            ->addOption(
+                'recoverable',
+                'r',
+                'optional',
+                'Create recoverable column (deleted_at)'
             );
     }
 }
