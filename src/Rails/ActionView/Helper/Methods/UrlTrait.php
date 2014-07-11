@@ -35,6 +35,22 @@ trait UrlTrait
         return $this->linkToIf(!$this->currentPage($urlOptions), $text, $urlOptions, $attrs, $fallback);
     }
     
+    /**
+     * @var string|array $params
+     */
+    public function urlFor($params)
+    {
+        return $this->routeSet->urlFor($params);
+    }
+    
+    /**
+     * @var string|array $params
+     */
+    public function pathFor($routeName, array $vars = [])
+    {
+        return $this->routeSet->pathFor($routeName, $vars);
+    }
+    
     public function isCurrentPage($options)
     {
         $url = $this->parseUrlOptions($options, ['route' => true]);

@@ -11,7 +11,7 @@ use Rails\ActionView\ActionView;
 use Rails\ActionView\Helper\HelperSet;
 use Rails\ActionView\Template\Assigns;
 use Rails\ServiceManager\ServiceLocatorAwareTrait;
-use Rails\Routing\Route\Set as RouteSet;
+use Rails\Routing\Route\RouteSet;
 
 /**
  *

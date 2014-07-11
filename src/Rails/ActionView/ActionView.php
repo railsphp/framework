@@ -8,7 +8,7 @@ use Rails\ActionView\Renderer\Exception as RendererException;
 use Rails\ActionView\Renderer\Renderer;
 use Rails\ActionView\Helper\HelperSet;
 use Rails\ActionView\Template\Assigns;
-use Rails\Routing\Route\Set as RouteSet;
+use Rails\Routing\Route\RouteSet;
 
 class ActionView
 {

@@ -3,7 +3,7 @@ namespace Rails\ActionView\Helper;
 
 use Rails\ActionView\Exception;
 use Rails\ActionView\Helper as AbstractHelper;
-use Rails\Routing\Route\Set as RouteSet;
+use Rails\Routing\Route\RouteSet;
 
 class HelperSet
 {

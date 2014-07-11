@@ -5,7 +5,7 @@ use Closure;
 use ArrayObject;
 use Rails\Routing\Route\Route;
 use Rails\Routing\Exception;
-use Rails\Routing\Route\Set as RouteSet;
+use Rails\Routing\Route\RouteSet;
 
 /*
 TODO: support this:
@@ -454,11 +454,11 @@ class Resources
         }
         
         if (empty($options['as'])) {
-            $option['as'] = null;
-            $options['as'] = $this->nameForAction($option['as'], $action);
-        } else {
-            unset($options['as']);
+            $options['as'] = null;
+            $options['as'] = $this->nameForAction($options['as'], $action);
         }
+        $options['alias'] = $options['as'];
+        unset($options['as']);
         
         $scope   = $this->scope;
         $options = array_merge_recursive($scope['options'], $options);

@@ -6,8 +6,7 @@ use Rails\Routing\Resources\Resources;
 use Rails\Routing\ActionToken;
 use Rails\Cache\Cache;
 
-# TODO: Change name to RouteSet
-class Set implements \ArrayAccess, \IteratorAggregate
+class RouteSet implements \ArrayAccess, \IteratorAggregate
 {
     protected $routes = [];
     
@@ -111,50 +110,96 @@ class Set implements \ArrayAccess, \IteratorAggregate
     }
     
     /**
+     * Get the URL path for a route by providing an "action token" as array or string.
+     *
      * Options used by this method:
      * * route - Returns both the built path and the matched route.
+     *
+     * ```
+     * $set->urlFor([['controller' => 'posts', 'action' => 'index']]);
+     * $set->urlFor([['controller' => 'posts', 'action' => 'show'], 'id' => 15]);
+     * $set->urlFor('posts#index');
+     * $set->urlFor(['posts#show', 'id' => 15]);
+     * ```
+     *
+     * @param string|array $criteria
      */
     public function urlFor($criteria, array $options = [])
     {
-        if (
-            (is_string($criteria) && ($criteria = [$criteria])) ||
-            is_array($criteria)
-        ) {
-            $token   = new ActionToken(array_shift($criteria));
+        if (is_array($criteria)) {
+            $pathParams = array_slice($criteria, 1);
+            $criteria   = array_shift($criteria);
+        } else {
+            $pathParams = [];
+        }
+        
+        $token = new ActionToken($criteria);
+        
+        foreach ($this->routes as $route) {
+            $route->build();
             
-            foreach ($this->routes as $route) {
-                $route->build();
-                
-                if ($route->to() == $token->toString()) {
-                    if ($path = $this->buildRouteUrl($route, $criteria, $options)) {
-                        if (!empty($options['route'])) {
-                            return [$path, $route];
-                        }
-                        return $path;
+            if ($route->to() == $token->toString()) {
+                if ($path = $this->buildRouteUrl($route, $pathParams, $options)) {
+                    if (!empty($options['route'])) {
+                        return [$path, $route];
                     }
+                    return $path;
                 }
             }
         }
+        
         # TODO: invalid argument exception?
         return false;
     }
     
-    public function urlForAlias($alias, array $vars = [], array $options = [])
+    /**
+     * Get the URL path for a route by providing a route name.
+     *
+     * ```
+     * $set->pathFor('posts');
+     * $set->pathFor('post', [id' => 15]);
+     * $set->pathFor('root');
+     * $set->pathFor('base');
+     * ```
+     *
+     * @var string $name
+     */
+    public function pathFor($name, $vars = [], array $options = [])
     {
+        if ($name == 'base') {
+            return $this->basePath;
+        }
+        
         foreach ($this->routes as $route) {
             $route->build();
             
-            if ($route->name() == $alias) {
+            if ($route->name() == $name) {
                 if ($path = $this->buildRouteUrl($route, $vars, $options)) {
                     return $path;
                 }
             }
         }
+        
+        $routeParams = [];
+        if (is_array($vars)) {
+            $routeParams = array_merge($routeParams, $vars);
+        } elseif ($vars instanceof Base) {
+            $routeParams['record'] = get_class($vars);
+            $routeParams['id'] = $vars->id();
+        }
+        
+        $routeParams = implode(', ', array_map(function($name, $val) { return $name . '=>' . $val; }, array_keys($routeParams), $routeParams));
+        $message = "Couldn't find route with name '%s' and options { %s }";
+        throw new Exception\InvalidArgumentException(sprintf(
+            $message,
+            $name,
+            $routeParams
+        ));
     }
     
     protected function buildRouteUrl($route, array $vars = [], array $options)
     {
-        if (current($vars) instanceof Base) {
+        if ($vars && reset($vars) instanceof Base) {
             $vars = $this->extractVarsFromModel($route, current($vars));
         }
         
@@ -168,6 +213,8 @@ class Set implements \ArrayAccess, \IteratorAggregate
             }
             return $path;
         }
+        
+        return false;
     }
     
     protected function extractVarsFromModel($route, $model)

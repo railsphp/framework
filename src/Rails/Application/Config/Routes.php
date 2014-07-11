@@ -15,7 +15,7 @@ class Routes
                 'constraints' => [
                     'action' => '/properties|routes/',
                 ],
-                'alias' => 'rails_info',
+                'alias' => 'railsInfo',
                 'via' => ['get'],
                 'anchor' => true,
                 'as' => null,
@@ -24,7 +24,7 @@ class Routes
             'segmentKeys' => ['action'],
             'isBuilt' => true,
             'path' => '/rails/info(/:action)',
-            'name' => 'rails_info',
+            'name' => 'railsInfo',
             'to' => null,
             'controller' => null,
             'action' => null,
@@ -33,7 +33,7 @@ class Routes
             'via' => ['get'],
             'defaults' => [
                 'format' => false,
-                'alias' => 'rails_info',
+                'alias' => 'railsInfo',
                 'action' => null
             ],
             'vars' => [

@@ -45,7 +45,7 @@ class Dispatcher
             
             default:
                 $app->response()->setLocation(
-                    $app->routes()->urlForAlias('rails_info', ['action' => 'routes'])
+                    $app->routes()->pathFor('railsInfo', ['action' => 'routes'])
                 );
                 break;
         }

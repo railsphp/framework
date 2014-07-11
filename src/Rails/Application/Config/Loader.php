@@ -1,7 +1,7 @@
 <?php
 namespace Rails\Application\Config;
 
-use Rails\Routing\Route\Set as RouteSet;
+use Rails\Routing\Route\RouteSet;
 use Rails\Routing\Route\BuiltRoute;
 use Rails\Application\Base as AppBase;
 use Rails\ActiveRecord\Connection\Manager as ConnectionManager;

@@ -5,8 +5,7 @@ class ActionToken
 {
     const METHOD_SEPARATOR    = '#';
     
-    // const NAMESPACE_SEPARATOR = '\\';
-    const NAMESPACE_SEPARATOR = '.';
+    const NAMESPACE_SEPARATOR = '/';
     
     /**
      * Set a route with which tokens containing only the
@@ -170,7 +169,7 @@ class ActionToken
         
         if (is_bool(strpos($token, self::METHOD_SEPARATOR))) {
             throw new Exception\InvalidArgumentException(
-                sprintf("Missing METHOD_SEPARATOR in token '%s'", $token)
+                sprintf("Invalid action token '%s'", $token)
             );
         }
         
