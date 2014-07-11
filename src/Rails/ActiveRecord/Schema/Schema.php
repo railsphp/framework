@@ -134,7 +134,7 @@ class Schema
                 break;
             
             case 'boolean':
-                $column = new Ddl\Column\Boolean($name);
+                $column = new Column\Boolean($name);
                 break;
             
             // case 'primaryKey':
