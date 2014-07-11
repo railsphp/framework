@@ -11,23 +11,9 @@ use Rails\ActiveRecord\ActiveRecord;
 
 class Schema
 {
-    // /**
-     // * @var \Rails\ActiveRecord\Connection
-     // */
-    // protected $connection;
-    
     protected $adapter;
     
     protected $sql;
-    
-    // public function __construct(\Rails\ActiveRecord\Connection $connection = null)
-    // {
-        // if (!$connection) {
-            // $connection = ActiveRecord::connection(Rails::env());
-        // }
-        // $this->connection = $connection;
-        // $this->buildZfAdapter();
-    // }
     
     public function __construct(Adapter $adapter)
     {
@@ -44,11 +30,6 @@ class Schema
     {
         return $this->adapter;
     }
-    
-    // public function connection()
-    // {
-        // return $this->connection;
-    // }
     
     public function createTable($tableName, $options = [], Closure $block = null)
     {
@@ -183,19 +164,6 @@ class Schema
     {
         return call_user_func_array([$this->adapter->getDriver()->getConnection(), 'executeSql'], func_get_args());
     }
-    
-    // protected function buildZfAdapter()
-    // {
-        // $pdoCon = new Db\Adapter\Driver\Pdo\Connection();
-        // $pdoCon->setResource($this->connection->resource());
-        
-        // $pdo = new Db\Adapter\Driver\Pdo\Pdo($pdoCon);
-        // $this->adapter = new Db\Adapter\Adapter($pdo);
-        
-        // $this->sql = new Db\Sql\Sql(
-            // $this->adapter
-        // );
-    // }
     
     protected function queryAdapter($ddl)
     {
