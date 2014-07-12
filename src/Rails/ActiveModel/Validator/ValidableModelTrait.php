@@ -5,7 +5,7 @@ use Rails\ActiveModel\Errors\Errors;
 
 trait ValidableModelTrait
 {
-    protected $modelValidator;
+    // protected $modelValidator;
     
     protected $validationContext;
     
@@ -16,10 +16,7 @@ trait ValidableModelTrait
     
     public function validator()
     {
-        if (!$this->modelValidator) {
-            $this->setupValidator();
-        }
-        return $this->modelValidator;
+        return $this->getModelValidator();
     }
     
     public function isValid($context = null)
@@ -53,19 +50,32 @@ trait ValidableModelTrait
         return $this->validationContext == 'update';
     }
     
+    protected function getModelValidator()
+    {
+        $class = get_called_class();
+        $validator = Validator::forClass($class);
+        if (!$validator) {
+            $validator = $this->setupValidator();
+            Validator::setForClass($class, $validator);
+        }
+        return $validator;
+    }
+    
+    protected function setupValidator()
+    {
+        $validator = new ModelValidator();
+        $validator->setValidations(
+            $this->getAllValidations()
+        );
+        
+        return $validator;
+    }
+    
     # TODO: get validations from methods *Validations()
     protected function getAllValidations()
     {
         $validations = $this->validations();
         return $validations;
-    }
-    
-    protected function setupValidator()
-    {
-        $this->modelValidator = new ModelValidator();
-        $this->modelValidator->setValidations(
-            $this->getAllValidations()
-        );
     }
     
     # TODO: support multiple attribute assigment like

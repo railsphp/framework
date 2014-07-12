@@ -3,6 +3,8 @@ namespace Rails\ActiveModel\Validator;
 
 abstract class Validator
 {
+    protected static $validatorsPerClass = [];
+    
     /**
      * @var array
      */
@@ -16,11 +18,21 @@ abstract class Validator
      * $value is what is going to be validated; the value of the attribute.
      *
      * @param object $record
-     // * @param string $attribute
-     // * @param mixed $value
      * @return void
      */
-    abstract public function validate($record/*, $attribute, $value*/);
+    abstract public function validate($record);
+    
+    public static function setForClass($class, self $validator)
+    {
+        self::$validatorsPerClass[$class] = $validator;
+    }
+    
+    public static function forClass($class)
+    {
+        if (isset(self::$validatorsPerClass[$class])) {
+            return self::$validatorsPerClass[$class];
+        }
+    }
     
     /**
      * Common allowed options:
@@ -33,10 +45,4 @@ abstract class Validator
     {
         $this->options = $options;
     }
-    
-    // public function setOptions($options)
-    // {
-        // $this->options = $options;
-        // $this->validateOptions();
-    // }
 }

@@ -1,9 +1,9 @@
 <?php
 namespace Rails\ActiveModel\Validator;
 
-class ModelValidator
+class ModelValidator extends Validator
 {
-    protected static $VALIDATORS = [
+    protected $validators = [
         'absence'       => 'Rails\ActiveModel\Validator\Validations\AbsenceValidator',
         'acceptance'    => 'Rails\ActiveModel\Validator\Validations\AcceptanceValidator',
         'confirmation'  => 'Rails\ActiveModel\Validator\Validations\ConfirmationValidator',
@@ -16,6 +16,11 @@ class ModelValidator
     ];
     
     protected $validations = [];
+    
+    public function setValidator($type, $validatorClass)
+    {
+        $this->validators[$type] = $validatorClass;
+    }
     
     public function setValidations(array $validations)
     {
@@ -72,7 +77,7 @@ class ModelValidator
     protected function validateAttribute($record, $attribute, $validators)
     {
         foreach ($validators as $kind => $options) {
-            if (!isset(self::$VALIDATORS[$kind])) {
+            if (!isset($this->validators[$kind])) {
                 throw new Exception\UnknownValidatorException(
                     sprintf("Unknown validator kind '%s'", $kind)
                 );
@@ -82,7 +87,7 @@ class ModelValidator
             }
             
             $options['attributes'] = [$attribute];
-            $validatorName = self::$VALIDATORS[$kind];
+            $validatorName = $this->validators[$kind];
             $validator = new $validatorName($options);
             $validator->validate($record, $attribute, $record->getProperty($attribute));
         }
