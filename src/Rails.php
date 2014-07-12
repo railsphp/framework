@@ -100,9 +100,16 @@ class Rails
         return self::getService('cache');
     }
     
-    public static function log()
+    public static function log(/*...$vars*/)
     {
-        return self::getService('log');
+        if (func_num_args()) {
+            call_user_func_array(
+                [self::getService('log'), 'vars'],
+                func_get_args()
+            );
+        } else {
+            return self::getService('log');
+        }
     }
     
     public static function loader()
