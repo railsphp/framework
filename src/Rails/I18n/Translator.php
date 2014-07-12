@@ -176,9 +176,18 @@ class Translator
                 $entry = $this->interpolate($entry, $values);
             }
         } elseif (isset($options['exception']) && $options['exception']) {
-            throw new Exception\TranslationMissingException(
-                sprintf("Missing translation '%s'", implode(self::DEFAULT_SEPARATOR, $key))
-            );
+            $message = sprintf("Missing translation '%s'", implode(self::DEFAULT_SEPARATOR, $key));
+            
+            if (isset($options['default'])) {
+                $message .= " with defaults:\n";
+                if (is_array($options['default'])) {
+                    $message .= implode("\n", $options['default']);
+                } else {
+                    $message .= $options['default'];
+                }
+            }
+            
+            throw new Exception\TranslationMissingException($message);
         }
         
         return $entry;
