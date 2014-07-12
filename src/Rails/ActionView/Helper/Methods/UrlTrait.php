@@ -38,17 +38,17 @@ trait UrlTrait
     /**
      * @var string|array $params
      */
-    public function urlFor($params)
+    public function urlFor($params, array $options = [])
     {
-        return $this->routeSet->urlFor($params);
+        return $this->routeSet->urlFor($params, $options);
     }
     
     /**
      * @var string|array $params
      */
-    public function pathFor($routeName, array $vars = [])
+    public function pathFor($routeName, array $vars = [], array $options = [])
     {
-        return $this->routeSet->pathFor($routeName, $vars);
+        return $this->routeSet->pathFor($routeName, $vars, $options);
     }
     
     public function isCurrentPage($options)
