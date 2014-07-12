@@ -169,4 +169,11 @@ abstract class PersistedModel extends ActiveModel\Base
         
         return parent::__call($attrName, $params);
     }
+    
+    protected function setupValidator()
+    {
+        $validator = parent::setupValidator();
+        $validator->setValidator('uniqueness', 'Rails\ActiveRecord\Validator\Validations\UniquenessValidator');
+        return $validator;
+    }
 }
