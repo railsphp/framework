@@ -56,10 +56,10 @@ class Logger extends ZendLogger
         return $this->log(self::NONE, $message);
     }
     
-    public function vars(array $vars)
+    public function vars(/*...$vars*/)
     {
         ob_start();
-        foreach ($vars as $var) {
+        foreach (func_get_args() as $var) {
             var_dump($var);
         }
         $message  = ob_get_clean();
