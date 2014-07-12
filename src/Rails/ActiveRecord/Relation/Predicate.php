@@ -256,15 +256,25 @@ abstract class Predicate
         return $this;
     }
     
+    /**
+     * $where->equal(['id' => $wantedId]);
+     */
     public function equal()
     {
-        $this->addCondition('equalTo', func_get_args());
+        foreach ($params as $columnName => $value) {
+            $this->addCondition('equalTo', [$columnName, $value]);
+        }
         return $this;
     }
     
-    public function not()
+    /**
+     * $where->not(['last_name' => $excludedLastName]);
+     */
+    public function not(array $params)
     {
-        $this->addCondition('notEqualTo', func_get_args());
+        foreach ($params as $columnName => $value) {
+            $this->addCondition('notEqualTo', [$columnName, $value]);
+        }
         return $this;
     }
     
