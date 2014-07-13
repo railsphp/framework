@@ -10,6 +10,7 @@ use Rails\ActionDispatch\Cookies\CookieJar;
 use Rails\ActionView\ActionView;
 use Rails\ActionView\Helper\HelperSet;
 use Rails\ActionView\Template\Assigns;
+use Rails\ActionView\Renderer\Exception\TemplateMissingException;
 use Rails\ServiceManager\ServiceLocatorAwareTrait;
 use Rails\Routing\Route\RouteSet;
 
@@ -519,14 +520,18 @@ abstract class Base
                 $this->{$this->actionName}();
             });
         } else {
-            # TODO: check if view exists
-            throw new Exception\UnknownActionException(
-                sprintf(
-                    "The action '%s' could not be found for %s",
-                    $actionName,
-                    get_called_class()
-                )
-            );
+            try {
+                $this->render();
+            } catch (TemplateMissingException $e) {
+                throw new Exception\UnknownActionException(
+                    sprintf(
+                        "The action '%s' could not be found for %s",
+                        $actionName,
+                        get_called_class()
+                    )
+                );
+            }
+            
         }
         
     }
