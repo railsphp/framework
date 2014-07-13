@@ -36,7 +36,7 @@ class Response
     public function setContentType($contentType)
     {
         if (is_bool(strpos($contentType, 'charset=')) && $this->charset) {
-            $contentType .= '; ' . $this->charset;
+            $contentType .= '; charset=' . $this->charset;
         }
         
         $this->headers['Content-Type'] = $contentType;
@@ -108,7 +108,10 @@ class Response
     
     public function contentType()
     {
-        return $this->contentType;
+        if (!empty($this->headers['Content-Type'])) {
+            return $this->headers['Content-Type'];
+        }
+        return null;
     }
     
     public function status()
