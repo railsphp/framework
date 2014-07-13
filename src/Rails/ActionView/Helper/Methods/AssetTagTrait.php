@@ -217,7 +217,7 @@ trait AssetTagTrait
                     
                     $processor->listFiles($file);
                     foreach ($processor->files() as $subFile) {
-                        $this->compileAssetFile($subFile->url());
+                        $this->compileAssetFile($subFile->logicalPath());
                         $this->appendAssetTag($subFile->url(), $type, $builder, $options, true, $tags);
                     }
                 }

@@ -104,7 +104,12 @@ class File
      */
     public function subPathsPath()
     {
-        return $this->subPaths ? implode('/', $this->subPaths) . '/' : '';
+        return $this->subPaths ? implode(DIRECTORY_SEPARATOR, $this->subPaths) . DIRECTORY_SEPARATOR : '';
+    }
+    
+    public function logicalPath()
+    {
+        return $this->subPathsPath() . $this->name() . '.' . $this->type();
     }
     
     public function fullDir()
