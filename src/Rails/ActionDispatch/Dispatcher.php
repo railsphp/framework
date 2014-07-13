@@ -29,6 +29,7 @@ class Dispatcher
         
         try {
             $controller->runAction($application->request()->action());
+            $this->setDefaultContentType($controller);
         } catch (\Exception $e) {
             if (!$application->config()['consider_all_requests_local']) {
                 try {
@@ -41,6 +42,34 @@ class Dispatcher
                 }
             } else {
                 throw $e;
+            }
+        }
+    }
+    
+    protected function setDefaultContentType($controller)
+    {
+        if (!$controller->response()->contentType()) {
+            # OPTIMIZE:
+            switch ($controller->request()->format()) {
+                case 'html':
+                    $contentType = 'text/html';
+                    break;
+                case 'json':
+                    $contentType = 'application/json';
+                    break;
+                case 'xml':
+                    $contentType = 'application/xml';
+                    break;
+                case 'js':
+                    $contentType = 'application/javascript';
+                    break;
+                default:
+                    $contentType = '';
+                    break;
+            }
+            
+            if ($contentType) {
+                $controller->response()->setContentType($contentType);
             }
         }
     }
