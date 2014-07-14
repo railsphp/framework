@@ -66,8 +66,12 @@ class Parameters implements \IteratorAggregate
     }
     
     /**
+     * Looks for a parameter among many sources.
      * Note the order in which the parameters are returned:
      * Route, get, post, etc.
+     * If the parameter isn't found, null is returned.
+     *
+     * @return mixed
      */
     public function getParam($prop)
     {
@@ -92,7 +96,7 @@ class Parameters implements \IteratorAggregate
             }
         }
         
-        return false;
+        return null;
     }
     
     public function setRouteVars(array $vars)
