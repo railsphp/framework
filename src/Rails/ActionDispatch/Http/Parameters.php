@@ -19,7 +19,7 @@ class Parameters implements \IteratorAggregate
     
     protected $files;
     
-    protected $jsonParamsError = null;
+    protected $jsonPayloadError = null;
     
     public function getIterator()
     {
@@ -30,18 +30,30 @@ class Parameters implements \IteratorAggregate
     {
         $method = !empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
         
-        if ($method != 'GET' && $method != 'POST') {
-            $params = file_get_contents('php://input');
-            $decoded = [];
-            if (!empty($_SERVER['CONTENT_TYPE']) && $_SERVER['CONTENT_TYPE'] == "application/json") {
-                $decoded = json_decode($params, true);
-                if ($decoded === null) {
-                    $decoded = [];
-                    $this->jsonParamsError = json_last_error();
-                }
+        if (
+            isset($_SERVER['CONTENT_TYPE']) &&
+            strpos($_SERVER['CONTENT_TYPE'], 'application/json') === 0
+        ) {
+            $decoded = json_decode(file_get_contents('php://input'));
+            
+            if ($decoded === null) {
+                $decoded = [];
+                $this->jsonPayloadError = json_last_error();
             } else {
-                parse_str($params, $decoded);
+                if ($method == 'POST') {
+                    $_POST = $decoded;
+                } elseif ($method == 'DELETE') {
+                    $this->deleteParams = $decoded;
+                } elseif ($method == 'PUT') {
+                    $this->putParams = $decoded;
+                } elseif ($method == 'PATCH') {
+                    $this->patchParams = $decoded;
+                } else {
+                    $this->otherVerbParams = $decoded;
+                }
             }
+        } elseif ($method != 'GET' && $method != 'POST') {
+            parse_str(file_get_contents('php://input'), $decoded);
             
             if ($method == 'DELETE') {
                 $this->deleteParams = $decoded;
@@ -166,9 +178,9 @@ class Parameters implements \IteratorAggregate
         return $this->files;
     }
     
-    public function jsonParamsError()
+    public function jsonPayloadError()
     {
-        return $this->jsonParamsError;
+        return $this->jsonPayloadError;
     }
     
     protected function searchParam($index)
