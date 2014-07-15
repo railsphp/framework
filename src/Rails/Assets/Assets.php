@@ -213,7 +213,7 @@ class Assets
         if (!$file instanceof File\File) {
             $file = $this->finder()->find($file);
             if (!$file) {
-                throw new Exception\RUntimeException(sprintf(
+                throw new Exception\RuntimeException(sprintf(
                     "Couldn't find asset file '%s'",
                     $file
                 ));
