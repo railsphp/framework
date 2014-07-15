@@ -1,6 +1,10 @@
 <?php
 namespace Rails\ActionView\Helper\Methods\Logic;
 
+use Closure;
+use Rails\ActiveRecord\Base as ARBase;
+use Rails\ActiveModel\Collection;
+
 class FieldsFor
 {
     public function render(
@@ -8,7 +12,7 @@ class FieldsFor
         $recordName,
         $recordObject = null,
         $options = [],
-        Closure = $block = null
+        Closure $block = null
     ) {
         if ($recordObject instanceof Closure) {
             $block = $recordObject;

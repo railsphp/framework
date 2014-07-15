@@ -131,33 +131,6 @@ trait FormTrait
             $options,
             $block
         );
-        // if ($recordObject instanceof Closure) {
-            // $block = $recordObject;
-            // $recordObject = '';
-        // } elseif ($options instanceof Closure) {
-            // $block = $options;
-            // $options = [];
-        // }
-        
-        // if ($recordName instanceof ARBase || $recordName instanceof Collection) {
-            // $recordObject = $recordName;
-            // $recordName = '';
-        // } elseif (is_string($recordName) && (is_array($recordObject) || $recordObject instanceof Closure)) {
-            // # $recordName is a string and $recordObject isn't an object;
-            // # get $recordObject from assigns.
-            // $recordObject = $this->getObject($recordName);
-        // }
-        
-        // $formBuilder = $this->helperSet->invoke(
-            // 'getFormBuilder',
-            // [
-                // $recordObject,
-                // $recordName ?
-                    // $this->getService('inflector')->underscore($recordName) :
-                    // $recordName
-            // ]
-        // );
-        // return $formBuilder->runBlock($block);
     }
     
     public function fileField($objectName, $property, array $options = [])
