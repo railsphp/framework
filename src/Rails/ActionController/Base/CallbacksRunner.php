@@ -71,8 +71,7 @@ class CallbacksRunner
         foreach ($this->controller->getReflection()->getMethods() as $method) {
             $methodName = $method->getName();
             if (
-                strpos($methodName, 'Filters') === strlen($methodName) - 7      &&
-                strpos($method->getDeclaringClass()->getName(), 'Rails') !== 0
+                strpos($methodName, 'Filters') === strlen($methodName) - 7
             ) {
                 $filters = array_merge_recursive($filters, $invoker($methodName));
             }
@@ -82,7 +81,7 @@ class CallbacksRunner
             $filters = array_merge_recursive($filters, $closure());
         }
         
-        $filters = $invoker('filters');
+        $filters = array_merge_recursive($filters, $invoker('filters'));
         
         return $filters;
     }
