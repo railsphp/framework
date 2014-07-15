@@ -160,7 +160,7 @@ class Executor
                     throw new Exception\RuntimeException(
                         sprintf(
                             "Invalid directive '%s'\nin: %s:%s",
-                            $directive,
+                            $command,
                             $this->file->originalFilePath(),
                             $line
                         )
