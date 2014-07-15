@@ -2,7 +2,8 @@
 namespace Rails\ActiveRecord\Relation;
 
 use Zend\Db\Sql\Expression;
-use Zend\Db\Sql\Select;
+// use Zend\Db\Sql\Select;
+use Rails\ActiveRecord\Sql\Select;
 use Zend\Paginator\Adapter\DbSelect as Paginator;
 
 abstract class AbstractRelation implements \IteratorAggregate, \Countable
@@ -108,14 +109,16 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
     
     public function join($tableName, $on, $columns = Select::SQL_STAR, $type = Select::JOIN_INNER)
     {
-        $this->select->join($tableName, $on, $columns, $type);
-        return $this;
+        $rel = $this->currentOrClone();
+        $rel->select->join($tableName, $on, $columns, $type);
+        return $rel;
     }
     
     public function order($order)
     {
-        $this->currentOrClone()->select->order($order);
-        return $this;
+        $rel = $this->currentOrClone();
+        $rel->select->order($order);
+        return $rel;
     }
     
     /**
@@ -246,7 +249,14 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
     {
         $rel = $this->currentOrClone();
         $rel->select->limit($limit);
-        return $this;
+        return $rel;
+    }
+    
+    public function offset($offset)
+    {
+        $rel = $this->currentOrClone();
+        $rel->select->offset($offset);
+        return $rel;
     }
     
     /**
