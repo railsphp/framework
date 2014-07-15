@@ -135,7 +135,7 @@ class ExceptionPresenter extends \Rails\ActionView\Presenter
                     isset($trace[0]['class'])        &&
                     isset($trace[0]['function'])     &&
                     $trace[0]['class']    == 'Rails\ActionDispatch\ErrorReporting\Reporter' &&
-                    $trace[0]['function'] == 'reportError'
+                    ($trace[0]['function'] == 'reportError' || $trace[0]['function'] == 'buildErrorException')
                 ) {
                     return true;
                 }
