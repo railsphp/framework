@@ -119,14 +119,14 @@ abstract class Base
 
         if ($route->controller() == ':controller') {
             $route->setProperController(
-                $this->getService('inflector')
-                    ->camelize($routeVars['controller'])->toString()
+                lcfirst($this->getService('inflector')
+                    ->camelize($routeVars['controller'])->toString())
             );
         }
         if ($route->action() == ':action') {
             $route->setProperAction(
-                $this->getService('inflector')
-                    ->camelize($routeVars['action'])->toString()
+                lcfirst($this->getService('inflector')
+                    ->camelize($routeVars['action'])->toString())
             );
         }
         
