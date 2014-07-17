@@ -22,7 +22,8 @@
         "pagon/jade": "1.0.*",
         "nesbot/carbon": "1.8.*",
         "d11wtq/boris": "1.0.*",
-        "nikic/php-parser": "0.9.4"
+        "nikic/php-parser": "0.9.4",
+        "willdurand/negotiation": "1.3.*"
     },
     
     "suggest": {
