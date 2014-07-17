@@ -20,7 +20,7 @@ class Dispatcher
     
     public function dispatch($application)
     {
-        $controllerClass = ucfirst($application->request()->controller()) . 'Controller';
+        $controllerClass = $application->routes()->requestRoute()->to()->toClass() . 'Controller';
         $controller      = new $controllerClass($application);
         
         $controller->actionView()->lookupContext()->addPath(
