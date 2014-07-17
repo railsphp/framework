@@ -5,7 +5,7 @@ use Zend;
 use Rails\ServiceManager\ServiceLocatorAwareTrait;
 use Rails\Application\Config\Loader as ConfigLoader;
 use Rails\Config\Config;
-use Rails\ActionDispatch\Request as HttpRequest;
+use Rails\ActionDispatch\Http\Request as HttpRequest;
 use Rails\ActionDispatch\Http\Session as Session;
 use Rails\ActionDispatch\Http\Parameters as HttpParameters;
 use Rails\ActionDispatch\Http\Response as HttpResponse;
@@ -136,6 +136,7 @@ abstract class Base
         
         $this->routes()->setRequestRoute($route);
         $this->request()->setRequestRoute($route);
+        $this->request()->setParameters($this->parameters());
         
         $endPoint = $route->endPoint();
         

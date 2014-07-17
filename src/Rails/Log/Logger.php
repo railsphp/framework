@@ -2,7 +2,7 @@
 namespace Rails\Log;
 
 use Zend\Log\Logger as ZendLogger;
-use Rails\ActionDispatch\Request;
+use Rails\ActionDispatch\Http\Request;
 use Rails\ActionDispatch\ErrorReporting\Reporter;
 
 class Logger extends ZendLogger
