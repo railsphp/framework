@@ -7,21 +7,9 @@ use Rails\Railtie\ConfigurableRailtieTrait;
 
 class Assets
 {
-    /*use ConfigurableRailtieTrait;*/
-    
-    // protected $paths = [];
-    
-    // protected $prefix = '/assets';
-    
     protected $finder;
     
     protected $tempFolder;
-    
-    // protected $compilers = [];
-    
-    // protected $compressors = [
-
-    // ];
     
     protected $config;
     
@@ -46,25 +34,6 @@ class Assets
         return $this->tempFolder;
     }
     
-    /**
-     * $compiler may be either a string, which should be the name of a class that extends
-     * Compiler\Compiler, or an array which will be used to instantiate
-     * \Rails\Config\MethodConfig.
-     *
-     * @param string $type  The file type (or extension) the compiler is for.
-     * @param string|array
-     * @see \Rails\Config\MethodConfig
-     */
-    // public function setCompiler($type, $compiler)
-    // {
-        // if (!is_array($compiler) && !is_string($compiler)) {
-            // throw new Exception\InvalidArgumentException(
-                
-            // );
-        // }
-        // $this->compilers[$type] = $compiler;
-    // }
-    
     public function getCompiler($type)
     {
         if (!isset($this->config['compilers'][$type])) {
@@ -82,18 +51,6 @@ class Assets
     {
         return $this->config['compilers']->toArray();
     }
-    
-    /**
-     * $methodConfig will be used to instantiate \Rails\Config\MethodConfig.
-     *
-     * @param string $type  The file type (or extension) the compressor is for.
-     * @param array
-     * @see \Rails\Config\MethodConfig
-     */
-    // public function setCompressor($type, array $methodConfig)
-    // {
-        // $this->compressors[$type] = $methodConfig;
-    // }
     
     public function getCompressor($type)
     {
@@ -168,24 +125,6 @@ class Assets
         return $this->config['host'];
     }
     
-    // public function compressFile($file, $compile = true, $fullCompile = true)
-    // {
-        // if (!$file instanceof File\File) {
-            // $file = $this->finder()->find($file);
-            // if (!$file) {
-                // return false;
-            // }
-        // }
-        
-        // if ($compile) {
-            // $
-        // }
-        
-        // return $compressedFile;
-    // }
-    
-    // public function 
-    
     public function compressContents($type, $contents)
     {
         if ($this->config['compressors']->$type->none()) {
@@ -210,6 +149,7 @@ class Assets
      */
     public function compileFile($file, $full = true)
     {
+        $name = $file;
         if (!$file instanceof File\File) {
             $file = $this->finder()->find($file);
             if (!$file) {
@@ -248,9 +188,14 @@ class Assets
             ($this->config['compress'] ? '-c' : '') .
             '.' . $file->type();
         
+        $dir = pathinfo($tempFilePath, PATHINFO_DIRNAME);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+        
         $processor    = new Processor\Processor($this);
         $processor->listFiles($file);
-        // unlink($tempFilePath);exit;
+        
         # Check if file has changed to recompile it or not.
         if (is_file($tempFilePath)) {
             $recompile = false;
@@ -290,6 +235,11 @@ class Assets
             $file->subPathsPath() . $file->name() . '-body' .
             ($this->config['compress'] ? '-c' : '') .
             '.' . $file->type();
+        
+        $dir = pathinfo($tempFilePath, PATHINFO_DIRNAME);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
         
         $recompile = true;
         

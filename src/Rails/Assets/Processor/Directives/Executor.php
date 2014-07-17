@@ -179,7 +179,7 @@ class Executor
                 $fileInfo->isFile() &&
                 str_replace('\\', '/', $fileInfo->getRealPath()) != $this->file->originalFilePath()
             ) {
-                if ($neighbor = FileCopy::getNeighbor($this->file, $fileInfo->getBasename())) {
+                if ($neighbor = FileCopy::getNeighbor($this->file, $fileInfo->getRealPath())) {
                     $this->processor->listFiles($neighbor);
                 }
             }

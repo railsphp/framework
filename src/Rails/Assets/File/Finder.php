@@ -54,25 +54,6 @@ class Finder
     
     public function findAll(array $manifestFiles)
     {
-        // $js  = '.js';
-        // $css = '.css';
-        
-        // $filter = function($file) use ($js, $css, $manifestFiles) {
-            // $name = $file->getBasename();
-            // if (
-                // is_int(strpos($name, $js))  ||
-                // is_int(strpos($name, $css))
-            // ) {
-                // foreach ($manifestFiles as $manifestFile) {
-                    // if (is_int(strpos($name, $manifestFile))) {
-                        // return true;
-                    // }
-                // }
-                // return false;
-            // }
-            // return true;
-        // };
-        
         $files = [];
         foreach ($this->assets->paths() as $path) {
             foreach (
@@ -128,7 +109,7 @@ class Finder
             $assetRoot,
             $pinfo['filename'],
             $extensions,
-            $this->extractSubPaths($assetRoot, $match, $pinfo),
+            $this->extractSubPaths($assetRoot, $match),
             realpath($match)
         );
     }
@@ -164,16 +145,20 @@ class Finder
         return $this->assets;
     }
     
-    protected function extractSubPaths($assetRoot, $filePath, array $pinfo)
+    protected function extractSubPaths($assetRoot, $filePath)
     {
-        $subPath = substr(
+        $subFilePath  = substr(
             $filePath,
-            strlen($assetRoot),
-            strlen($assetRoot) - strpos($filePath, '/' . $pinfo['basename'])
+            strlen($assetRoot) + 1
         );
         
+        $subPath = pathinfo($subFilePath, PATHINFO_DIRNAME);
+        if ($subPath == '.') {
+            $subPath = '';
+        }
+        
         if ($subPath) {
-            return explode('/', $subPath);
+            return explode('/', ltrim($subPath, '/'));
         } else {
             return [];
         }

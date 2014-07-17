@@ -10,9 +10,9 @@ class Server
     
     public function serve($app)
     {
-        $filename = (string)$app->parameters()->path;
         $fileType = $app->request()->format();
         $filePath = null;
+        $filename = (string)$app->parameters()->path . ($fileType ? '.' . $fileType : '');
         
         if ($fileType == 'css' || $fileType == 'js') {
             $data = $app->getService('assets')->compileFile(

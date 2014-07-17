@@ -3,7 +3,6 @@ namespace Rails\Assets\File;
 
 class File
 {
-    protected $finder;
     protected $rootPath;
     protected $name;
     protected $extensions = [];
@@ -16,6 +15,8 @@ class File
     
     protected $processor;
     
+    protected $finder;
+    
     /**
      * @param string $subPath
      */
@@ -24,7 +25,7 @@ class File
         $rootPath,
         $name,
         array $extensions,
-        $subPath,
+        $subPaths,
         $originalFilePath
     ) {
         $this->finder           = $finder;
@@ -32,8 +33,12 @@ class File
         $this->name             = $name;
         $this->extensions       = $extensions;
         $this->originalFilePath = str_replace('\\', '/', $originalFilePath);
-        if ($subPath) {
-            $this->subPaths = explode('/', $subPath);
+        if ($subPaths) {
+            if (is_array($subPaths)) {
+                $this->subPaths = $subPaths;
+            } else {
+                $this->subPaths = explode('/', $subPath);
+            }
         }
     }
     

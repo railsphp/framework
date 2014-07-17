@@ -14,15 +14,20 @@ abstract class Copy extends File
             '.',
             pathinfo($filename, PATHINFO_BASENAME)
         );
-        $subPaths  = explode('/', trim('/', substr($filename, strlen($origin->originalFilePath()))));
+        
+        $subPaths  = explode('/', trim(
+            substr($filename, strlen(
+                pathinfo($origin->originalFilePath(), PATHINFO_DIRNAME)
+            )),
+            '/'
+        ));
         array_pop($subPaths);
         
         $neighbor             = clone $origin;
         $neighbor->name       = array_shift($nameParts);
         $neighbor->extensions = $nameParts;
         $neighbor->subPaths   = $subPaths;
-        $neighbor->originalFilePath = str_replace('\\', '/', $origin->fullDir()) . '/' . $filename;
-        
+        $neighbor->originalFilePath = $filename;
         return $neighbor;
     }
     
