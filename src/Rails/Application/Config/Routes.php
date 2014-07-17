@@ -61,25 +61,25 @@ class Routes
             'constraints'   => [],
             'requirements'  => [],
             'options' => [
-                'format'    => false,
+                // 'format'    => false,
                 'via'       => ['get'],
                 'anchor'    => true,
-                'as'        => null,
+                // 'as'        => null,
                 'alias'     => null,
             ],
             'scope'         => [],
             'segmentKeys'   => null,
             'isBuilt'       => true,
-            'path'          => $assetsPrefix . '/*path',
+            'path'          => $assetsPrefix . '/*path(.:format)',
             'name'          => null,
             'to'            => null,
             'controller'    => null,
             'action'        => null,
             'endPoint'      => 'Rails\Assets\Server::dispatchRequest',
-            'pathRegex'     => '/^' . preg_quote($assetsPrefix, '/') . '\/(.*?)$/',
+            'pathRegex'     => '/^' . preg_quote($assetsPrefix, '/') . '\/(.*?)(?:\.([^\/\.]+?))?$/',
             'via' => ['get'],
             'defaults' => [
-                'format'    => false,
+                'format'    => null,
                 'path'      => null,
             ],
             'vars' => [
@@ -87,11 +87,20 @@ class Routes
                     'type'       => '*',
                     'constraint' => null,
                 ],
+                'format' => [
+                    'type'       => ':',
+                    'constraint' => null
+                ]
             ],
             'namespaces'        => [],
             'requiredVars'      => ['path'],
-            'optionalGroups'    => [],
-            'anchor'            => true,
+            'optionalGroups'    => [
+                [
+                    'part' => '(.:format)',
+                    ['format']
+                ]
+            ],
+            'anchor'            => true
         ];
     }
 }
