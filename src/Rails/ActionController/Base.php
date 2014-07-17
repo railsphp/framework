@@ -2,7 +2,7 @@
 namespace Rails\ActionController;
 
 use ReflectionClass;
-use Rails\ActionDispatch\Request;
+use Rails\ActionDispatch\Http\Request;
 use Rails\ActionDispatch\Http\Response;
 use Rails\ActionDispatch\Http\Parameters;
 use Rails\ActionDispatch\Http\Session;
@@ -103,11 +103,6 @@ abstract class Base
     
     public function __call($method, $params)
     {
-        # TODO
-        // if ($this->isNamedPathMethod($method)) {
-            // return $this->getNamedPath($method, $params);
-        // }
-        
         throw new Exception\BadMethodCallException(
             sprintf(
                 "Called to unknown method %s::%s",
@@ -219,19 +214,36 @@ abstract class Base
         $this->respondTo = $responses;
     }
     
-    public function respondsTo()
-    {
-        return $this->respondTo;
-    }
-    
+    /**
+     * Basic functionality.
+     */
     public function respondWith($var)
     {
-        $this->respondWith = $var;
-    }
-    
-    public function respondsWith()
-    {
-        return $this->respondWith;
+        if (!$this->respondTo) {
+            throw new Exception\RuntimeException(
+                "In order to use respondWith, first you need to declare the formats your controller responds to in the respondTo property"
+            );
+        }
+        
+        $format = $this->request()->format();
+        
+        if (in_array($format, $this->respondTo)) {
+            try {
+                $this->render();
+            } catch (TemplateMissingException $e) {
+                if ($format != 'html' && $format != 'js') {
+                    $rendering = new Rendering($this);
+                    $body = $rendering->renderSerialized($var, $format);
+                    $this->response()->setBody($body);
+                } else {
+                    throw $e;
+                }
+            }
+        }
+        
+        if (!$this->isPerformed()) {
+            $this->head(406);
+        }
     }
     
     /**
@@ -291,6 +303,26 @@ abstract class Base
         
         $rendering = new Rendering($this);
         return $rendering->renderResponse($renderOptions);
+    }
+    
+    /**
+     * Shortcut method.
+     *
+     * @see Request::getUploadedFile()
+     */
+    public function getFile(/*...$keys*/)
+    {
+        return call_user_func_array([$this->request(), 'getUploadedFile'], func_get_args());
+    }
+    
+    /**
+     * Shortcut method.
+     *
+     * @see Request::getUploadedFiles()
+     */
+    public function getFiles(/*...$keys*/)
+    {
+        return call_user_func_array([$this->request(), 'getUploadedFiles'], func_get_args());
     }
     
     protected function splitOptions($options)
@@ -421,10 +453,21 @@ abstract class Base
         $prefixes   = [];
         $inflector  = $this->getService('inflector');
         $getPath    = function($class) use ($inflector) {
-            return $inflector->underscore(preg_replace('/(\w+)Controller$/', '\1', $class))->toString();
+            if (is_int(strpos($class, '\\'))) {
+                $parts = explode('\\', $class);
+            } else {
+                $parts = [$class];
+            }
+            return implode('/', array_map(function($part) use ($inflector) {
+                return trim(preg_replace_callback('/^(\w+?)(Controller)?$/', function($m){
+                    return preg_replace_callback('/[A-Z]/', function($m) {
+                        return '_' . strtolower($m[0]);
+                    }, $m[1]);
+                }, $part), '_');
+            }, $parts));
         };
         
-        $prefixes[] = $getPath(get_class($this));
+        $prefixes[] = $getPath(get_called_class());
         
         while (true) {
             $parent = $reflection->getParentClass();
@@ -616,6 +659,8 @@ abstract class Base
     {
         return $this->response()->body() !== null || $this->response()->isCommitted();
     }
+    
+
     
     /**
      * Automatically finds the corresponding resource for the current

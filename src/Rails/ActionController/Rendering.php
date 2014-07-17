@@ -38,7 +38,7 @@ class Rendering
                 break;
             
             case 'json':
-                return $this->renderJson($value, $options);
+                return $this->renderSerialized($value, 'json');
                 break;
             
             case 'file':
@@ -73,24 +73,56 @@ class Rendering
         return $this->controller->actionView();
     }
     
-    public function renderJson($var, array $options)
+    /**
+     * Attempts to serialize $var according to $format, setting the
+     * proper content type and returning the serialization.
+     * TODO: improve content type.
+     *
+     * @return string
+     */
+    public function renderSerialized($var, $format)
     {
         if (is_string($var)) {
-            $json = $var;
+            $serialized = $var;
         } elseif (is_object($var)) {
-            if ($var instanceof \Rails\ActiveRecord\Base) {
-                $json = $var->toJson();
-            } elseif ($var instanceof \Rails\ActiveModel\Collection) {
-                $json = $var->toJson();
+            $toMethod = 'to' . ucFirst($format);
+            
+            if ($var instanceof \Rails\ActiveRecord\Relation) {
+                $serialized = $var->records()->$toMethod();
             } else {
-                $json = json_encode($var);
+                if (is_callable([$var, $toMethod])) {
+                    $serialized = $var->$toMethod();
+                }
             }
-        } else {
-            $json = json_encode($var);
+        } elseif (is_array($var)) {
+            if ($format == 'json') {
+                $serialized = json_encode($var);
+            } 
         }
         
-        $this->controller->response()->setContentType('application/json');
-        return $json;
+        if (!isset($serialized)) {
+            if (is_object($var)) {
+                $message = sprintf("Can't serialize object of class %s to format %s", get_class($var), $format);
+            } else {
+                $message = sprintf("Can't serialize variable of type %s to format %s", $var, $format);
+            }
+            throw new Exception\RuntimeException($message);
+        }
+        
+        switch ($format) {
+            case 'json':
+                $contentType = 'application/json';
+                break;
+            case 'xml':
+                $contentType = 'application/xml';
+                break;
+            default:
+                $contentType = 'text/plain';
+                break;
+        }
+        
+        $this->controller->response()->setContentType($contentType);
+        return $serialized;
     }
     
     protected function setUpContext(array $options)
