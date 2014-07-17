@@ -17,8 +17,6 @@ class Parameters implements \IteratorAggregate
      */
     protected $otherVerbParams = [];
     
-    protected $files;
-    
     protected $jsonPayloadError = null;
     
     public function getIterator()
@@ -31,10 +29,11 @@ class Parameters implements \IteratorAggregate
         $method = !empty($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '';
         
         if (
+            $method != 'GET' &&
             isset($_SERVER['CONTENT_TYPE']) &&
             strpos($_SERVER['CONTENT_TYPE'], 'application/json') === 0
         ) {
-            $decoded = json_decode(file_get_contents('php://input'));
+            $decoded = json_decode(file_get_contents('php://input'), true);
             
             if ($decoded === null) {
                 $decoded = [];
@@ -167,15 +166,6 @@ class Parameters implements \IteratorAggregate
     public function all()
     {
         return $this->toArray();
-    }
-    
-    public function files()
-    {
-        if (!$this->files) {
-            $this->files = new UploadedFiles();
-            $this->files->import();
-        }
-        return $this->files;
     }
     
     public function jsonPayloadError()

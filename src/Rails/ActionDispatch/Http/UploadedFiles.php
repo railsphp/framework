@@ -6,24 +6,34 @@ class UploadedFiles
 {
     protected $files;
     
+    /**
+     * @para array $files   Normally it would be $_FILES
+     */
+    public function __construct(array $files)
+    {
+        $this->files = $this->import($files);
+    }
+    
     public function files()
     {
         return $this->files;
     }
     
-    protected function import()
+    protected function import(array $files)
     {
-        $this->files = new \stdClass();
+        $imported = [];
     
-        foreach ($_FILES as $mainName => $data) {
+        foreach ($files as $mainName => $data) {
             if (!is_array($data['name'])) {
                 if ($data['error'] != UPLOAD_ERR_NO_FILE) {
-                    $this->files->$mainName = new UploadedFile($_FILES[$mainName]);
+                    $imported[$mainName] = new UploadedFile($files[$mainName]);
                 }
             } else {
-                $this->files->$mainName = $this->getSubNames($data);
+                $imported[$mainName] = $this->getSubNames($data);
             }
         }
+        
+        return $imported;
     }
     
     protected function getSubNames(array $arr)
