@@ -74,7 +74,8 @@ trait PersistenceMethodsTrait
             }
             return $coll;
         } else {
-            $model = new static($attributes);
+            $model = new static();
+            $model->assignAttributes($attributes);
             if ($block) {
                 $block($model);
             }
