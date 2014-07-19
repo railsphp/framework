@@ -73,8 +73,13 @@ class FormBuilder extends Helper
     
     public function passwordField($property, array $attrs = [])
     {
-        $this->helper->setDefaultModel($this->model);
+        // $this->helper->setDefaultModel($this->model);
         return $this->helper->passwordField($this->inputNamespace, $property, $attrs);
+    }
+    
+    public function fileField($property, array $attrs = [])
+    {
+        return $this->invoke('fileField', [$this->model, $property, $attrs]);
     }
     
     public function checkBox($property, array $attrs = [], $checked_value = '1', $unchecked_value = '0')

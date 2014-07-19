@@ -68,6 +68,11 @@ class HelperSet
         return $this->params;
     }
     
+    public function assigns()
+    {
+        return $this->assigns;
+    }
+    
     public function setRouteSet(RouteSet $routeSet)
     {
         $this->baseHelper()->setRouteSet($routeSet);

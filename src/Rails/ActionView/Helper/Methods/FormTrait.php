@@ -5,6 +5,7 @@ use Closure;
 use Rails\ActionView\FormBuilder;
 use Rails\ActiveRecord\Base as ARBase;
 use Rails\ActiveModel\Collection;
+use Rails\ActionView\Exception;
 
 trait FormTrait
 {
@@ -332,9 +333,21 @@ trait FormTrait
     protected function getObject($objectName)
     {
         if (is_string($objectName)) {
-            return $this->helperSet->assigns()->get($objectName);
-        } else {
+            $object = $this->helperSet->assigns()->get($objectName);
+            if (!is_object($object)) {
+                throw new Exception\RuntimeException(sprintf(
+                    "Assign '%s' is '%s', expected object",
+                    $objectName,
+                    gettype($object)
+                ));
+            }
+        } elseif (is_object($objectName)) {
             return $objectName;
+        } else {
+            throw new Exception\RuntimeException(sprintf(
+                "Argument passed must be either string or object, received %s",
+                gettype($objectName)
+            ));
         }
     }
     
