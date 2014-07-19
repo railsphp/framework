@@ -52,11 +52,12 @@ class AccessibleProperties
             $attrsNames = [];
             
             foreach ($this->get($className) as $attrName => $value) {
-                $underscoredName = \Rails::getService('inflector')->underscore($attrName);
+                $underscoredName = \Rails::getService('inflector')->underscore($attrName)->toString();
                 $attrsNames[$underscoredName] = $value;
             }
             
             # TODO: cache accordingly.
+            $this->propsByClassUnderscored[$className] = $attrsNames;
         }
         
         return $this->propsByClassUnderscored[$className];

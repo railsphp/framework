@@ -1,6 +1,8 @@
 <?php
 namespace Rails\ActiveRecord\Adapter\Driver;
 
+use Zend\Db\Sql\Sql;
+
 /**
  * Add a little more methods to retrieve data to the Connections.
  */
@@ -15,9 +17,13 @@ trait ConnectionModifierTrait
      */
     protected $name;
     
+    protected $sql;
+    
     public function setAdapter($adapter)
     {
-        $this->adapter = $adapter;
+        if (!$this->adapter) {
+            $this->adapter = $adapter;
+        }
     }
     
     public function setName($name)
@@ -30,6 +36,11 @@ trait ConnectionModifierTrait
         return $this->name;
     }
     
+    /**
+     * This method is overwritten by connections.
+     *
+     * @return string
+     */
     public function getDriverName()
     {
     }
@@ -106,8 +117,16 @@ trait ConnectionModifierTrait
         }
     }
     
+    public function getSql()
+    {
+        if (!$this->sql) {
+            $this->sql = new Sql($this->adapter);
+        }
+        return $this->sql;
+    }
+    
     public function table($tableName)
     {
-        return new \Rails\ActiveRecord\Relation\SqlRelation($this->adapter, $tableName);
+        return new \Rails\ActiveRecord\Relation\SqlRelation($this->getSql(), $tableName);
     }
 }

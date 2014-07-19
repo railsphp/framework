@@ -31,8 +31,6 @@ class Relation extends Relation\AbstractRelation
         $this->select->from($modelClass::tableName());
     }
     
-    // public function __call($methd
-    
     public function deleted($value = true)
     {
         $this->deleted = $value;

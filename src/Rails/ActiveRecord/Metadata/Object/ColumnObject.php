@@ -2,7 +2,7 @@
 namespace Rails\ActiveRecord\Metadata\Object;
 
 use Zend\Db\Metadata\Object\ColumnObject as Zf2ColumnObject;
-use Rails\ActiveSupport\Carbon;
+use Rails\ActiveSupport\Carbon\Carbon;
 
 class ColumnObject extends Zf2ColumnObject
 {
@@ -45,11 +45,15 @@ class ColumnObject extends Zf2ColumnObject
         $column->numericScale           = $base->numericScale;
         $column->numericUnsigned        = $base->numericUnsigned;
         $column->errata                 = $base->errata;
-        $column->setDataType($base->dataType);
+        
+        $column->setType($column->simplifiedDataType($base->dataType));
         
         return $column;
     }
     
+    /**
+     * @param string $dataType  E.g. "tinyint(4)", "varchar(255)"
+     */
     public function setDataType($dataType)
     {
         parent::setDataType($dataType);
@@ -212,11 +216,18 @@ class ColumnObject extends Zf2ColumnObject
         $this->numericPrecision       = $this->extractPrecision($dataType);
     }
     
+    /**
+     * Tinyints columns whose name begins with "is_" (like "is_active") are
+     * assumed to be booleans.
+     */
     protected function simplifiedDataType($dataType)
     {
         $dataType = strtolower($dataType);
         
         if (is_int(strpos($dataType, 'int'))) {
+            if ($dataType == 'tinyint' && strpos($this->name, 'is_') === 0) {
+                return 'boolean';
+            }
             return 'integer';
         } elseif (
             is_int(strpos($dataType, 'float')) ||

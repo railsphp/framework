@@ -3,23 +3,21 @@ namespace Rails\ActiveRecord\Relation;
 
 use Rails\ActiveRecord\Exception;
 use Zend\Db\Sql as ZfSql;
-use Zend\Db\Adapter\AdapterInterface;
-// use Zend\Db\Adapter\Adapter;
 
 class SqlRelation extends AbstractRelation
 {
     /**
-     * @var AdapterInterface
+     * @var ZfSql\Sql
      */
-    protected $adapter;
+    protected $sql;
     
     protected $tableName;
     
-    public function __construct(AdapterInterface $adapter, $tableName)
+    public function __construct(ZfSql\Sql $sql, $tableName)
     {
         parent::__construct();
         
-        $this->adapter   = $adapter;
+        $this->sql       = $sql;
         $this->tableName = $tableName;
         $this->from($this->tableName);
     }
@@ -38,10 +36,10 @@ class SqlRelation extends AbstractRelation
      */
     public function insert(array $columnsValuesPairs, $name = true)
     {
-        $adapter   = $this->adapter;
+        $adapter   = $this->sql->getAdapter();
         $insert    = new ZfSql\Insert($this->tableName);
         $insert->values($columnsValuesPairs);
-        $sqlString = $insert->getSqlString($adapter->getPlatform());
+        $sqlString = $this->sql->getSqlStringForSqlObject($insert);
         
         try {
             $result = $adapter->query($sqlString, $adapter::QUERY_MODE_EXECUTE);
@@ -70,13 +68,13 @@ class SqlRelation extends AbstractRelation
     {
         $update = new ZfSql\Update($this->tableName);
         $update->set($columnsValuesPairs);
-        $adapter = $this->adapter;
+        $adapter = $this->sql->getAdapter();
         
         if ($this->select->where) {
             $update->where($this->select->where);
         }
         
-        $sqlString = $update->getSqlString($adapter->getPlatform());
+        $sqlString = $this->sql->getSqlStringForSqlObject($update);
         
         try {
             $result = $adapter->query($sqlString, $adapter::QUERY_MODE_EXECUTE);
@@ -96,13 +94,13 @@ class SqlRelation extends AbstractRelation
     public function delete()
     {
         $delete  = new ZfSql\Delete($this->tableName);
-        $adapter = $this->adapter;
+        $adapter = $this->sql->getAdapter();
         
         if ($this->select->where) {
             $delete->where($this->select->where);
         }
         
-        $sqlString = $delete->getSqlString($adapter->getPlatform());
+        $sqlString = $this->sql->getSqlStringForSqlObject($delete);
         
         try {
             $result = $adapter->query($sqlString, $adapter::QUERY_MODE_EXECUTE);
@@ -121,6 +119,6 @@ class SqlRelation extends AbstractRelation
     
     protected function adapter()
     {
-        return $this->adapter;
+        return $this->sql->getAdapter();
     }
 }

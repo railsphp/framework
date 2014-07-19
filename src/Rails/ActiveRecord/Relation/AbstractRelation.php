@@ -2,8 +2,7 @@
 namespace Rails\ActiveRecord\Relation;
 
 use Zend\Db\Sql\Expression;
-// use Zend\Db\Sql\Select;
-use Rails\ActiveRecord\Sql\Select;
+use Zend\Db\Sql\Select;
 use Zend\Paginator\Adapter\DbSelect as Paginator;
 
 abstract class AbstractRelation implements \IteratorAggregate, \Countable
@@ -281,8 +280,11 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
     
     public function toSql()
     {
-        $modelClass = $this->modelClass;
-        return $this->select->getSqlString($this->adapter()->getPlatform());
+        return $this->adapter()
+            ->getDriver()
+            ->getConnection()
+            ->getSql()
+            ->getSqlStringForSqlObject($this->select);
     }
     
     /**
@@ -329,8 +331,8 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
      */
     protected function loadRecords($select)
     {
+        $sql     = $this->toSql();
         $adapter = $this->adapter();
-        $sql     = $select->getSqlString($adapter->getPlatform());
         $records = $adapter->query($sql, $adapter::QUERY_MODE_EXECUTE)->toArray();
         return $records;
     }

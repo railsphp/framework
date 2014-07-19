@@ -1,6 +1,7 @@
 <?php
 namespace Rails\ActiveModel\Attributes;
 
+use Rails\ActiveSupport\Carbon\Carbon;
 use Rails\ActiveModel\Exception;
 
 class Attributes
@@ -279,10 +280,10 @@ class Attributes
             case 'time':
             case 'date':
                 if (is_int($value) or (is_string($value) && ctype_digit($value))) {
-                    $value = \Carbon\Carbon::createFromTimestamp($value);
+                    $value = Carbon::createFromTimestamp($value);
                 } elseif (is_string($value)) {
                     try {
-                        $value = new \Carbon\Carbon($value);
+                        $value = new Carbon($value);
                     } catch (\Exception $e) {
                         $value = null;
                     }

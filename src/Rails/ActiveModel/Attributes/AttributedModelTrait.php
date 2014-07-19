@@ -268,7 +268,7 @@ trait AttributedModelTrait
     
     protected function getAccessibleAttributes()
     {
-        $attrNames = array_keys($this->getAttributes()->attributes());
+        $attrNames = array_keys($this->getAttributes()->toArray());
         
         $attrs = $this->attrAccessible();
         if (null !== $attrs) {
