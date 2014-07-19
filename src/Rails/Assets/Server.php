@@ -1,6 +1,8 @@
 <?php
 namespace Rails\Assets;
 
+use Rails\ActiveSupport\MimeTypes;
+
 class Server
 {
     public static function dispatchRequest($app)
@@ -34,7 +36,7 @@ class Server
         $response = $app->response();
         
         if ($filePath) {
-            $mtime   = filemtime($filePath);
+            $mtime = filemtime($filePath);
             $etag  = md5($filePath . $mtime);
             
             if ($this->notModified($filePath, $etag)) {
@@ -42,12 +44,12 @@ class Server
                 return;
             }
             
-            $response->addHeader('Last-Modified', date('D, d M Y H:i:s T'));
-            $response->addHeader('ETag', $etag);
-            $response->addHeader('Cache-control', 'public, must-revalidate');
-            
-            $response->setBody(file_get_contents($filePath));
-            $this->setContentType($fileType, $response);
+            $response
+                ->addHeader('Last-Modified', date('D, d M Y H:i:s T'))
+                ->addHeader('ETag', $etag)
+                ->addHeader('Cache-control', 'public, must-revalidate')
+                ->setBody(file_get_contents($filePath))
+                ->setContentType(MimeTypes::getMimeType($fileExt));
         } else {
             $response->setStatus(404);
         }
@@ -78,56 +80,5 @@ class Server
     {
         $response->addHeader('Cache-control', 'no-cache');
         $response->setStatus(304);
-    }
-    
-    protected function setContentType($fileExt, $response)
-    {
-        switch ($fileExt) {
-            case 'js':
-                $contentType = 'text/javascript';
-                break;
-            
-            case 'css':
-                $contentType = 'text/css';
-                break;
-            
-            case 'jpeg':
-                $contentType = 'image/jpeg';
-                break;
-                
-            case 'jpg':
-                $contentType = 'image/jpeg';
-                break;
-                
-            case 'png':
-                $contentType = 'image/png';
-                break;
-                
-            case 'gif':
-                $contentType = 'image/gif';
-                break;
-                
-            case 'ico':
-                $contentType = 'image/x-icon';
-                break;
-                
-            case 'svg':
-                $contentType = 'image/svg+xml';
-                break;
-                
-            case 'ttf':
-                $contentType = 'application/x-font-ttf';
-                break;
-                
-            case 'woff':
-                $contentType = 'application/font-woff';
-                break;
-            
-            default:
-                $contentType = 'application/octet-stream';
-                return;
-        }
-        
-        $response->setContentType($contentType);
     }
 }

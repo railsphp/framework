@@ -2,6 +2,7 @@
 namespace Rails\ActionController;
 
 use Rails\ActionView\ActionView;
+use Rails\ActiveSupport\MimeTypes;
 
 class Rendering
 {
@@ -102,26 +103,22 @@ class Rendering
         
         if (!isset($serialized)) {
             if (is_object($var)) {
-                $message = sprintf("Can't serialize object of class %s to format %s", get_class($var), $format);
+                $message = sprintf(
+                    "Can't serialize object of class %s to format %s",
+                    get_class($var),
+                    $format
+                );
             } else {
-                $message = sprintf("Can't serialize variable of type %s to format %s", $var, $format);
+                $message = sprintf(
+                    "Can't serialize variable of type %s to format %s",
+                    $var,
+                    $format
+                );
             }
             throw new Exception\RuntimeException($message);
         }
         
-        switch ($format) {
-            case 'json':
-                $contentType = 'application/json';
-                break;
-            case 'xml':
-                $contentType = 'application/xml';
-                break;
-            default:
-                $contentType = 'text/plain';
-                break;
-        }
-        
-        $this->controller->response()->setContentType($contentType);
+        $this->controller->response()->setContentType(MimeTypes::getMimeType($format));
         return $serialized;
     }
     
