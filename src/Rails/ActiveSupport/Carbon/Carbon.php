@@ -1,5 +1,5 @@
 <?php
-namespace Rails\ActiveSupport;
+namespace Rails\ActiveSupport\Carbon;
 
 use Carbon\Carbon as Base;
 use Rails\ActiveSupport\Exception;
@@ -7,10 +7,18 @@ use Rails\ServiceManager\ServiceLocatorAwareTrait;
 
 /**
  * Extends Carbon to add Rails-like, localized diffForHumans().
+ * Also implements JsonSerializable interface to help ActiveModel's
+ * toJson() method to properly serialize Carbon objects, otherwise
+ * it will generate an array.
  */
-class Carbon extends Base
+class Carbon extends Base implements \JsonSerializable
 {
     use ServiceLocatorAwareTrait;
+    
+    public function jsonSerialize()
+    {
+        return $this->format('Y-m-d H:i:s');
+    }
     
     public function diffForHumans(Base $other = null, $locale = null)
     {
