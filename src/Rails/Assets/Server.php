@@ -49,7 +49,7 @@ class Server
                 ->addHeader('ETag', $etag)
                 ->addHeader('Cache-control', 'public, must-revalidate')
                 ->setBody(file_get_contents($filePath))
-                ->setContentType(MimeTypes::getMimeType($fileExt));
+                ->setContentType(MimeTypes::getMimeType($fileType));
         } else {
             $response->setStatus(404);
         }
