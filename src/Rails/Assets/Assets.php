@@ -149,7 +149,6 @@ class Assets
      */
     public function compileFile($file, $full = true)
     {
-        $name = $file;
         if (!$file instanceof File\File) {
             $file = $this->finder()->find($file);
             if (!$file) {
