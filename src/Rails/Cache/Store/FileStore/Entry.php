@@ -53,7 +53,7 @@ class Entry
         $header['createdAt'] = time();
         
         if (!is_dir($this->path())) {
-            mkdir($this->path(), 0755, true);
+            mkdir($this->path(), 0775, true);
         }
         
         return (bool)file_put_contents($this->filePath(), json_encode($header) . "\n" . $value);

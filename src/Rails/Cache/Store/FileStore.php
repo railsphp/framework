@@ -30,7 +30,7 @@ class FileStore extends AbstractStore
         $this->basePath = $basePath;
         
         if (!is_dir($basePath)) {
-            mkdir($basePath, 777, true);
+            mkdir($basePath, 0775, true);
         }
     }
     
