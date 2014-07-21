@@ -1,5 +1,5 @@
 <?php
-namespace Rails\ActionDispatch\Test;
+namespace Rails\ActionDispatch\Test\Http;
 
 use finfo;
 

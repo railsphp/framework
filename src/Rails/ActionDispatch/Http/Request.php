@@ -39,7 +39,7 @@ class Request
     
     protected $isLocal;
     
-    public function setParameters(Parameters $parameters)
+    public function __construct(Parameters $parameters)
     {
         $this->parameters = $parameters;
     }
@@ -175,8 +175,8 @@ class Request
      */
     public function method()
     {
-        if (isset($_POST['_method'])) {
-            $method = strtoupper($_POST['_method']);
+        if (isset($this->parameters->post()['_method'])) {
+            $method = strtoupper($this->parameters->post()['_method']);
             if (in_array($method, self::$allowedHackMethods)) {
                 return $method;
             }

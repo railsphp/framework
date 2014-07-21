@@ -99,15 +99,15 @@ class MimeTypes
     {
         if (isset(self::$mimeTypes[$extension])) {
             if (is_array(self::$mimeTypes[$extension])) {
-                if (!$namespace) {
-                    throw new \BadMethodCallException(sprintf(
-                        "Must specify a namespace for extension '%s'",
-                        $extension
-                    ));
-                }
+                if ($namespace) {
+                    // throw new \BadMethodCallException(sprintf(
+                        // "Must specify a namespace for extension '%s'",
+                        // $extension
+                    // ));
                 
-                if (isset(self::$mimeTypes[$extension][$namespace])) {
-                    return self::$mimeTypes[$extension][$namespace];
+                    if (isset(self::$mimeTypes[$extension][$namespace])) {
+                        return self::$mimeTypes[$extension][$namespace];
+                    }
                 }
             } else {
                 return self::$mimeTypes[$extension];

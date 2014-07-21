@@ -56,8 +56,6 @@ abstract class Base
     
     protected $actionView;
     
-    protected $application;
-    
     /**
      * Children classes shouldn't override __construct(),
      * they should override init() instead.
@@ -68,10 +66,19 @@ abstract class Base
      * This will happen with any class called "ApplicationController" under any
      * namespace.
      */
-    public function __construct($application)
-    {
-        $this->application = $application;
-        $this->setUpAppComponents();
+    public function __construct(
+        Request     $request,
+        Response    $response,
+        Parameters  $params,
+        Session     $session,
+        RouteSet    $routeSet
+    ) {
+        $this->request  = $request;
+        $this->response = $response;
+        $this->params   = $params;
+        $this->session  = $session;
+        $this->routeSet = $routeSet;
+        
         $this->setUpReflections();
         $this->runInitializers();
     }
@@ -90,15 +97,6 @@ abstract class Base
             $reflection = $parent;
         }
         $this->appControllerRefls = array_reverse($this->appControllerRefls);
-    }
-    
-    protected function setUpAppComponents()
-    {
-        $this->request  = $this->application->request();
-        $this->response = $this->application->response();
-        $this->params   = $this->application->parameters();
-        $this->session  = $this->application->session();
-        $this->routeSet = $this->application->routes();
     }
     
     public function __call($method, $params)
@@ -154,32 +152,35 @@ abstract class Base
     
     public function response()
     {
-        return $this->application->response();
+        return $this->response;
     }
     
     public function session()
     {
-        return $this->application->session();
+        return $this->session;
     }
     
     public function params()
     {
-        return $this->application->parameters();
+        return $this->params;
     }
     
     public function request()
     {
-        return $this->application->request();
+        return $this->request;
     }
     
     public function routeSet()
     {
-        return $this->application->routes();
+        return $this->routeSet;
     }
     
+    /**
+     * Shortcut.
+     */
     public function cookies()
     {
-        return $this->application->response()->cookieJar();
+        return $this->response->cookieJar();
     }
     
     public function setLayout($layout)
@@ -659,8 +660,6 @@ abstract class Base
     {
         return $this->response()->body() !== null || $this->response()->isCommitted();
     }
-    
-
     
     /**
      * Automatically finds the corresponding resource for the current

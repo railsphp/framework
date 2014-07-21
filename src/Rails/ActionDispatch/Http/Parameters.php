@@ -157,7 +157,15 @@ class Parameters implements \IteratorAggregate
     
     public function toArray()
     {
-        return array_merge($this->deleteParams, $this->putParams, $this->patchParams, $this->otherVerbParams, $_POST, $_GET, $this->routeParams);
+        return array_merge(
+            $this->delete(),
+            $this->put(),
+            $this->patch(),
+            $this->others(),
+            $this->post(),
+            $this->get(),
+            $this->routeParams
+        );
     }
     
     /**

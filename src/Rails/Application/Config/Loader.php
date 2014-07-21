@@ -28,29 +28,34 @@ class Loader
     
     public function loadRoutes()
     {
-        if ($this->app->config()['use_cache']) {
-            $appName = get_class();
-            $appName = substr($appName, 0, strpos($appName, '\\'));
+        $cache = $this->app->getService('rails.cache');
+        $routesFile = $this->app->config()['paths']['config']->expand('routes.php');
+        $mTime = filemtime($routesFile);
+        $mTimeKey = 'rails.routes.mtime';
+        $lastMTime = $cache->read($mTimeKey);
+        $routeSet = null;
+        
+        if ($lastMTime && $lastMTime == $mTime) {
+            $key = $this->routesCacheKey();
+            $routes = $cache->read($key);
             
-            $key = 'rails.routes.' . $appName;
-            
-            if (!$routes = $this->app->getService('rails.cache')->read($key)) {
-                $routeSet = $this->initRouteSet();
-                $jsonRoutes = [];
-                foreach ($routeSet as $route) {
-                    $jsonRoutes[] = $route->build()->toArray();
-                }
-                $this->app->getService('rails.cache')->write($key, $jsonRoutes);
-                
-            } else {
+            if ($routes) {
                 $routeSet = new RouteSet();
-                
                 foreach ($routes as $route) {
                     $routeSet[] = BuiltRoute::fromArray($route);
                 }
             }
-        } else {
+        }
+        
+        if (!$routeSet) {
             $routeSet = $this->initRouteSet();
+            $jsonRoutes = [];
+            foreach ($routeSet as $route) {
+                $jsonRoutes[] = $route->build()->toArray();
+            }
+            $key = $this->routesCacheKey();
+            $cache->write($key, $jsonRoutes);
+            $cache->write($mTimeKey, $mTime);
         }
         
         if ($this->app->request()) {
@@ -147,11 +152,19 @@ class Loader
         $routeSet = new RouteSet();
         $routeSet->resources()->draw($builder);
         
-        if ($this->app->config()['use_cache']) {
-            $routeSet->setCache($this->app->getService('rails.cache'));
-        }
+        // if ($this->app->config()['use_cache']) {
+        // if ($this->app->config()['environment'] == 'production') {
+        $routeSet->setCache($this->app->getService('rails.cache'));
+        // }
         
         return $routeSet;
+    }
+    
+    protected function routesCacheKey()
+    {
+        $appName = get_class();
+        $appName = substr($appName, 0, strpos($appName, '\\'));
+        return 'rails.routes.' . $appName;
     }
     
     protected function createAppCache()

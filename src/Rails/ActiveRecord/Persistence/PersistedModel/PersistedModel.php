@@ -174,6 +174,7 @@ abstract class PersistedModel extends ActiveModel\Base
     {
         $validator = parent::setupValidator();
         $validator->setValidator('uniqueness', 'Rails\ActiveRecord\Validator\Validations\UniquenessValidator');
+        $validator->setValidator('presence',   'Rails\ActiveRecord\Validator\Validations\PresenceValidator');
         return $validator;
     }
 }

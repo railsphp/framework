@@ -136,7 +136,7 @@ abstract class Base
         
         $this->routes()->setRequestRoute($route);
         $this->request()->setRequestRoute($route);
-        $this->request()->setParameters($this->parameters());
+        // $this->request()->setParameters($this->parameters());
         
         $endPoint = $route->endPoint();
         
@@ -165,7 +165,7 @@ abstract class Base
     public function request()
     {
         if (!$this->request) {
-            $this->request = new HttpRequest();
+            $this->request = new HttpRequest($this->parameters());
         }
         return $this->request;
     }
