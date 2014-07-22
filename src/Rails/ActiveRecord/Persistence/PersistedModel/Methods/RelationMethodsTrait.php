@@ -55,6 +55,11 @@ trait RelationMethodsTrait
         return self::all()->first($limit);
     }
     
+    public static function count()
+    {
+        return self::all()->count();
+    }
+    
     /**
      * Include deleted records in the results.
      */
