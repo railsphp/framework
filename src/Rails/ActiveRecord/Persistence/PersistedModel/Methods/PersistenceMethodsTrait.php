@@ -262,11 +262,13 @@ trait PersistenceMethodsTrait
     
     protected function createOrUpdate(array $options = [])
     {
-        if ($this->isNewRecord()) {
-            return $this->createRecord($options);
-        } else {
-            return $this->updateRecord($options);
-        }
+        $this->transaction(function() use ($options) {
+            if ($this->isNewRecord()) {
+                return $this->createRecord($options);
+            } else {
+                return $this->updateRecord($options);
+            }
+        });
     }
     
     protected function createRecord(array $options = [])
@@ -280,18 +282,24 @@ trait PersistenceMethodsTrait
         
         if ($this->runCallbacks('save', function() {
             return $this->runCallbacks('create', function() {
+                if (!$this->fillTimeAttribute('created_at')) {
+                    $this->fillTimeAttribute('created_on');
+                }
+                if (!$this->fillTimeAttribute('updated_at')) {
+                    $this->fillTimeAttribute('updated_on');
+                }
+                
                 $id = static::persistence()->insert($this);
                 
-                if (!Attributes::isClassAttribute(get_called_class(), static::primaryKey())) {
-                    if ($id) {
-                        $this->isNewRecord = false;
-                        return true;
+                if ($id) {
+                    if (Attributes::isClassAttribute(get_called_class(), static::primaryKey())) {
+                        $this->setAttribute(static::primaryKey(), $id);
                     }
-                } elseif ($id) {
-                    $this->setAttribute(static::primaryKey(), $id);
                     $this->isNewRecord = false;
+                    
                     return true;
                 }
+                
                 return false;
             });
         })) {
@@ -316,8 +324,12 @@ trait PersistenceMethodsTrait
             return false;
         }
         
+        if (!$this->fillTimeAttribute('updated_at')) {
+            $this->fillTimeAttribute('updated_on');
+        }
+        
         if ($this->runCallbacks('save', function() {
-            static::persistence()->update($this);
+            return static::persistence()->update($this);
         })) {
             # TODO: after-commit callbacks.
             // $this->runCallbacks('commit');
@@ -327,11 +339,13 @@ trait PersistenceMethodsTrait
     
     protected function deleteOrDestroy(array $options = [])
     {
-        if ($this->isRecoverable() && empty($options['hardDestroy'])) {
-            return $this->deleteRecord($options);
-        } else {
-            return $this->destroyRecord($options);
-        }
+        $this->transaction(function() use ($options) {
+            if ($this->isRecoverable() && empty($options['hardDestroy'])) {
+                return $this->deleteRecord($options);
+            } else {
+                return $this->destroyRecord($options);
+            }
+        });
     }
     
     /**
@@ -368,5 +382,40 @@ trait PersistenceMethodsTrait
             }
             return false;
         });
+    }
+    
+    protected function fillTimeAttribute($attrName)
+    {
+        $attributes = Attributes::getAttributesFor(get_called_class());
+        
+        if (!$attribute = $attributes->getAttribute($attrName)) {
+            return false;
+        }
+        
+        switch ($attribute->type()) {
+            case 'datetime':
+            case 'timestamp':
+                $value = date('Y-m-d H:i:s');
+                break;
+            
+            case 'date':
+                $value = date('Y-m-d');
+                break;
+            
+            case 'time':
+                $value = date('H:i:s');
+                break;
+            
+            case 'year':
+                $value = date('Y');
+                break;
+            
+            default:
+                return false;
+        }
+        
+        $this->setAttribute($attrName, $value);
+        
+        return true;
     }
 }
