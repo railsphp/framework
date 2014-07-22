@@ -57,4 +57,17 @@ class AbstractManager
     {
         return $this->defaultConnection;
     }
+    
+    /**
+     * @param string $connectionName
+     * @return bool     True if connection exists, false otherwise.
+     */
+    public function setDefaultConnection($connectionName)
+    {
+        if (isset($this->connections[$connectionName])) {
+            $this->defaultConnection = $connectionName;
+            return true;
+        }
+        return false;
+    }
 }

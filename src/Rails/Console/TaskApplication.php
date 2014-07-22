@@ -24,6 +24,7 @@ class TaskApplication
         $this->consoleApp->addTask(new \Rails\ActiveRecord\Tasks\Create());
         $this->consoleApp->addTask(new \Rails\ActiveRecord\Tasks\Seed());
         $this->consoleApp->addTask(new \Rails\ActiveRecord\Tasks\Schema\Dump());
+        $this->consoleApp->addTask(new \Rails\Test\Tasks\TestTask());
     }
     
     public function run()

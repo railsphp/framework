@@ -6,6 +6,7 @@ use Rails\Routing\Route\BuiltRoute;
 use Rails\Application\Base as AppBase;
 use Rails\ActiveRecord\Connection\Manager as ConnectionManager;
 use Rails\ActiveRecord\Base as ActiveRecordBase;
+use Rails\ActiveRecord\Persistence\PersistedModel\PersistedModel;
 use Rails\Assets\Assets;
 use Rails\Yaml\Parser as Yaml;
 use Rails\Cache\Cache;
@@ -14,6 +15,8 @@ use Rails\Loader\Exception\ClassNotFoundException;
 class Loader
 {
     protected $app;
+    
+    protected $connectionManagerSetUp = false;
     
     public function __construct(AppBase $app)
     {
@@ -77,13 +80,23 @@ class Loader
         return $routeSet;
     }
     
-    public function loadEnvironmentConfig()
+    public function loadEnvironmentConfig($environment)
     {
-        $config     = $this->app->config();
-        $env        = $config['environment'];
-        $file       = $config['paths']['config']->expand('environments', $env . '.php');
+        $file = $this->app->config()['paths']['config']->expand('environments', $environment . '.php');
+        
+        if (!is_file($file)) {
+            throw new \InvalidArgumentException(sprintf(
+                "Configuration file for environment '%s' not found: %s",
+                $file
+            ));
+        }
+        
         $configurer = require $file;
-        $configurer($config);
+        $configurer($this->app->config());
+        
+        if ($this->connectionManagerSetUp) {
+            PersistedModel::connectionManager()->setDefaultConnection($environment);
+        }
     }
     
     public function loadInitializers()
@@ -113,11 +126,13 @@ class Loader
                 $options
             ) = $dbConfig;
             
-            $connectionManager  = new ConnectionManager(
+            $connectionManager = new ConnectionManager(
                 $connections,
                 $defaultConnection,
                 $options
             );
+            
+            $this->connectionManagerSetUp = true;
             
             return $connectionManager;
         });

@@ -48,7 +48,7 @@ abstract class Base
         
         $this->configLoader = new ConfigLoader($this);
         $this->configLoader->loadDefaultConfig();
-        $this->configLoader->loadEnvironmentConfig();
+        $this->configLoader->loadEnvironmentConfig($this->config['environment']);
         $this->initConfig($this->config);
         
         $this->configLoader->setUpAppCache();
