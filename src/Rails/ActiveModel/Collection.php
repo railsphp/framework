@@ -157,8 +157,8 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
      */
     public function search($prop, $value)
     {
-        foreach ($this->members() as $obj) {
-            if ($obj->$prop == $value)
+        foreach ($this->members as $obj) {
+            if ($obj->getProperty($prop) == $value)
                 return $obj;
         }
         return false;
