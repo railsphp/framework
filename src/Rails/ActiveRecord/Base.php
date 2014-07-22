@@ -216,6 +216,14 @@ abstract class Base extends Persistence\PersistedModel\PersistedModel
         return parent::reload();
     }
     
+    public function getProperty($name)
+    {
+        if ($this->getAssociations()->exists($name)) {
+            return $this->getAssociations()->load($this, $name);
+        }
+        return parent::getProperty($name);
+    }
+    
     protected function defaultAttributes()
     {
         return self::table()->columnDefaults();
