@@ -280,11 +280,7 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
     
     public function toSql()
     {
-        return $this->adapter()
-            ->getDriver()
-            ->getConnection()
-            ->getSql()
-            ->getSqlStringForSqlObject($this->select);
+        return $this->getSqlString($this->select);
     }
     
     /**
@@ -325,13 +321,22 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
         return $this;
     }
     
+    protected function getSqlString($select)
+    {
+        return $this->adapter()
+            ->getDriver()
+            ->getConnection()
+            ->getSql()
+            ->getSqlStringForSqlObject($select);
+    }
+    
     /**
      * @param Select $select
      * @return \Zend\Db\Adapter\Driver\ResultInterface
      */
     protected function loadRecords($select)
     {
-        $sql     = $this->toSql();
+        $sql     = $this->getSqlString($select);
         $adapter = $this->adapter();
         $records = $adapter->query($sql, $adapter::QUERY_MODE_EXECUTE)->toArray();
         return $records;
