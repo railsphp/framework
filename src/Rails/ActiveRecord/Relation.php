@@ -31,6 +31,20 @@ class Relation extends Relation\AbstractRelation
         $this->select->from($modelClass::tableName());
     }
     
+    /**
+     * Unknown methods are derived to the Collection object, so it's possible to do:
+     *
+     * ```
+     * $users->where('id', '>', 15)->any();
+     * $posts->order('title')->toJson();
+     * ```
+     */
+    public function __call($method, $params)
+    {
+        $this->load();
+        return call_user_func_array([$this->records, $method], $params);
+    }
+    
     public function deleted($value = true)
     {
         $this->deleted = $value;
