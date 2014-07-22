@@ -34,7 +34,9 @@ class Sql
         
         if ($this->updateRecord($record, $values)) {
             $record->getAttributes()->dirty()->changesApplied();
+            return true;
         }
+        return false;
     }
     
     public function updateColumns(Base $record, array $columnsValuesPairs)
