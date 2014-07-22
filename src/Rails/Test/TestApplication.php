@@ -4,6 +4,7 @@ namespace Rails\Test;
 use DirectoryIterator;
 use PHPUnit_TextUI_TestRunner as TestRunner;
 use Rails\Application\Base as Application;
+use Rails\Test\TestCase;
 
 class TestApplication
 {
@@ -13,14 +14,12 @@ class TestApplication
     {
         $this->setUpEnvironment($application);
         $this->application = $application;
+        TestCase::setApplication($application);
     }
     
     public function run($className)
     {
         $rootPath = str_replace('\\', '/', $this->application->config()['paths']['root']);
-        
-        // $suiteClassName = implode('/', array_slice(explode('/', $filePath), 2));
-        // $className;
         
         $reflection = new \ReflectionClass($className);
         

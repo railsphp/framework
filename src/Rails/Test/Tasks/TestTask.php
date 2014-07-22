@@ -14,7 +14,7 @@ class TestTask extends Task
             ->addArgument(
                 'class_name',
                 'required',
-                'Name of class to test (e.g. Api/UserTest).'
+                'Name of class to test (e.g. Api/UsersControllerTest).'
             );
         ;
     }

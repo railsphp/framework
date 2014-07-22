@@ -20,4 +20,24 @@ class Request extends Base
         }
         return null;
     }
+    
+    public function setFormat($format)
+    {
+        $this->format = $format;
+    }
+    
+    /**
+     * Parent calls `getallheaders` which is not available on CLI till PHP 5.5.7.
+     */
+    public function format()
+    {
+        if ($this->format === null) {
+            if (null !== ($format = $this->parameters->getParam('format'))) {
+                $this->format = $format;
+            } else {
+                $this->format = 'html';
+            }
+        }
+        return $this->format;
+    }
 }

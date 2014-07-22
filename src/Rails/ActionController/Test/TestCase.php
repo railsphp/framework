@@ -2,11 +2,15 @@
 namespace Rails\ActionController\Test;
 
 use Closure;
-use Rails\Application\Base as Application;
-use Rails\ActionController\Http\Response;
+use Rails\ActionDispatch\Http\Response;
+use Rails\ActionDispatch\Http\Session;
+use Rails\ActionDispatch\Test\Http\Parameters as TestParameters;
+use Rails\ActionDispatch\Test\Http\Request as TestRequest;
 use Rails\ActionDispatch\Test\Constraint;
+use Rails\Test\TestCase as BaseTestCase;
+use Rails\Routing\ActionToken;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends BaseTestCase
 {
     /**
      * Controller class is taken out of the name of the
@@ -20,14 +24,18 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     
     protected $controller;
     
-    /**
-     * @var Application
-     */
-    protected $application;
+    protected $params;
     
-    public function setApplication(Application $application)
+    protected $request;
+    
+    protected $session;
+    
+    protected $routeSet;
+    
+    public function __construct($name = null, array $data = [], $dataName = '')
     {
-        $this->application = $application;
+        parent::__construct($name, $data, $dataName);
+        $this->setUpRequest();
     }
     
     public function get($actionName, array $customParams = [], array $session = [])
@@ -35,23 +43,26 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         $this->runAction('get', $actionName, $customParams, $session);
     }
     
+    public function post($actionName, array $customParams = [], array $session = [])
+    {
+        $this->runAction('post', $actionName, $customParams, $session);
+    }
+    
     public function runAction($method, $actionName, array $customParams = [], array $session = [])
     {
-        $params   = new Http\Parameters();
-        $request  = new Http\Request($params);
-        $response = new Response();
-        $session  = new Session();
-        $routeSet = $this->application->routeSet();
-        
-        $this->setCustomRequestParams($params, $method, $customParams);
-        
         $controllerClass = $this->resolveControllerClass();
+        $this->ensureRouteExists($controllerClass, $actionName, $customParams);
+        
+        $response = new Response();
+        
+        $this->setCustomRequestParams($this->params, $method, $customParams);
+        
         $this->controller = new $controllerClass(
-            $request,
+            $this->request,
             $response,
-            $params,
-            $session,
-            $routeSet
+            $this->params,
+            $this->session,
+            $this->routeSet
         );
         
         $this->controller->runAction($actionName);
@@ -68,11 +79,41 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         self::assertThat($response, $constraint, $message);
     }
     
-    public static function assertDifference(Closure $difference, Closure $process)
+    protected function ensureRouteExists($controllerClass, $actionName, array $params)
     {
-        $original = $difference();
-        $process();
-        return $this->assertNotSame($original, $difference());
+        $nameParts = array_map(function($part) { return lcfirst($part); }, explode('\\', preg_replace('/Controller$/', '', $controllerClass)));
+        
+        $normalizedControllerName = implode(ActionToken::NAMESPACE_SEPARATOR, $nameParts);
+        $tokenParams = [
+            'controller' => $normalizedControllerName,
+            'action'     => $actionName
+        ];
+        $token = new ActionToken($tokenParams);
+        
+        array_unshift($params, $token->toString());
+        
+        $url = $this->routeSet->urlFor($params);
+        
+        if (!$url) {
+            array_shift($params);
+            $params = array_merge($tokenParams, $params);
+            $pairs  = [];
+            foreach ($params as $key => $value) {
+                $pairs[] = $key . '=>' . (is_scalar($value) ? '"' . $value . '"' : '(' . gettype($value) . ')');
+            }
+            throw new \Exception(sprintf(
+                'No route matches [%s]',
+                implode(', ', $pairs)
+            ));
+        }
+    }
+    
+    protected function setUpRequest()
+    {
+        $this->params   = new TestParameters();
+        $this->request  = new TestRequest($this->params);
+        $this->session  = new Session();
+        $this->routeSet = self::$application->routes();
     }
     
     protected function resolveControllerClass()
@@ -85,7 +126,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         return substr(get_called_class(), 0, -4);
     }
     
-    protected function setCustomRequestParams(Parameters $params, $method, array $customParams)
+    protected function setCustomRequestParams(TestParameters $params, $method, array $customParams)
     {
         switch ($method) {
             case 'get':

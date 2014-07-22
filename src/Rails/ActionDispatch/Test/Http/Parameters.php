@@ -63,4 +63,25 @@ class Parameters extends Base
     {
         return $this->patchParams;
     }
+    
+    public function getParam($prop)
+    {
+        if (isset($this->routeParams[$prop])) {
+            return $this->routeParams[$prop];
+        } elseif (isset($this->getParams[$prop])) {
+            return $this->getParams[$prop];
+        } elseif (isset($this->postParams[$prop])) {
+            return $this->postParams[$prop];
+        } elseif (isset($this->putParams[$prop])) {
+            return $this->putParams[$prop];
+        } elseif (isset($this->deleteParams[$prop])) {
+            return $this->deleteParams[$prop];
+        } elseif (isset($this->patchParams[$prop])) {
+            return $this->patchParams[$prop];
+        } elseif (isset($this->otherVerbParams[$prop])) {
+            return $this->otherVerbParams[$prop];
+        }
+        
+        return null;
+    }
 }
