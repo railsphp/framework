@@ -28,7 +28,7 @@ class Setter
         switch ($options['type']) {
             case 'belongsTo':
                 if ($value) {
-                    $this->matchClass($value, $options['class']);
+                    $this->matchClass($value, $options['className']);
                     $value = $value->id();
                 }
                 
@@ -39,7 +39,7 @@ class Setter
                 $foreignKey = $options['foreignKey'];
                 
                 if ($value) {
-                    $this->matchClass($value, $options['class']);
+                    $this->matchClass($value, $options['className']);
                     $value->setAttribute($foreignKey, $record->id());
                 }
                 

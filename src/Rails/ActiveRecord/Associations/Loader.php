@@ -24,8 +24,8 @@ class Loader
     
     protected function loadHasOne($record, $name, array $options)
     {
-        if (empty($options['class'])) {
-            $options['class'] = $record::getService('inflector')->camelize($name)->toString();
+        if (empty($options['className'])) {
+            $options['className'] = $record::getService('inflector')->camelize($name)->toString();
         }
         
         $query = $this->buildQuery($options);
@@ -41,12 +41,12 @@ class Loader
     
     protected function loadBelongsTo($record, $name, array $options)
     {
-        empty($options['class']) && $options['class'] = ucfirst($name);
+        empty($options['className']) && $options['className'] = ucfirst($name);
         
         $foreignKey = !empty($options['foreignKey']) ? $options['foreignKey'] : Rails::services()->get('inflector')->underscore($name) . '_id';
         
         if ($fKey = $record->getAttribute($foreignKey)) {
-            return $options['class']::where(['id' => $fKey])->first() ?: false;
+            return $options['className']::where(['id' => $fKey])->first() ?: false;
         }
         
         return false;
@@ -57,8 +57,8 @@ class Loader
      */
     protected function loadHasMany($record, $name, $options)
     {
-        if (empty($options['class'])) {
-            $options['class'] = $record::getService('inflector')->singularize($name)->camelize()->toString();
+        if (empty($options['className'])) {
+            $options['className'] = $record::getService('inflector')->singularize($name)->camelize()->toString();
         }
         
         $query = $this->buildQuery($options, 'hasMany', $record);
@@ -73,7 +73,7 @@ class Loader
         $query->where([$options['joinTable'] . '.' . $options['foreignKey']  => $record->id()]);
         $query->join(
             $options['joinTable'],
-            $options['class']::tableName() . '.' . $options['class']::primaryKey() . ' = ' . $options['joinTable'] . '.' . $options['associationForeignKey']
+            $options['className']::tableName() . '.' . $options['className']::primaryKey() . ' = ' . $options['joinTable'] . '.' . $options['associationForeignKey']
         );
         
         return $query;
@@ -82,9 +82,9 @@ class Loader
     protected function buildQuery(array $options, $proxyKind = null, $record = null)
     {
         if ($proxyKind) {
-            $query = new CollectionProxy($options['class'], $proxyKind, $record, $options['foreignKey']);
+            $query = new CollectionProxy($options['className'], $proxyKind, $record, $options['foreignKey']);
         } else {
-            $query = $options['class']::getRelation();
+            $query = $options['className']::getRelation();
         }
         
         # options[0], if present, it's an anonymous function to customize the relation.

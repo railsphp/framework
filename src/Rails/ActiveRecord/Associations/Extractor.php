@@ -14,7 +14,6 @@ class Extractor
      */
     public function getAssociations($class)
     {
-        // $class = get_class($model);
         $data = [];
         
         if (!isset($this->associations[$class])) {
@@ -71,15 +70,15 @@ class Extractor
         $options['type']    = $type;
         $inflector          = $this->getService('inflector');
         
-        if (!isset($options['class'])) {
+        if (!isset($options['className'])) {
             switch ($type) {
                 case 'hasMany':
                 case 'hasAndBelongsToMany':
-                    $options['class'] = ucfirst($inflector->singularize($name));
+                    $options['className'] = ucfirst($inflector->singularize($name));
                     break;
                 
                 default:
-                    $options['class'] = ucfirst($name);
+                    $options['className'] = ucfirst($name);
                     break;
             }
         }
@@ -111,16 +110,16 @@ class Extractor
                 if (empty($options['joinTable'])) {
                     if (
                         $class::tableNamePrefix() &&
-                        $class::tableNamePrefix() == $options['class']::tableNamePrefix()
+                        $class::tableNamePrefix() == $options['className']::tableNamePrefix()
                     ) {
                         $prefix = $class::tableNamePrefix();
                         $tableNames = [
                             substr($class::tableName(), strlen($prefix)),
-                            substr($options['class']::tableName(), strlen($prefix))
+                            substr($options['className']::tableName(), strlen($prefix))
                         ];
                     } else {
                         $prefix = null;
-                        $tableNames = [ $class::tableName(), $options['class']::tableName() ];
+                        $tableNames = [ $class::tableName(), $options['className']::tableName() ];
                     }
                     
                     sort($tableNames);
@@ -141,7 +140,7 @@ class Extractor
                     $options['foreignKey'] = str_replace('/', '_', $inflector->underscore($modelClass)) . '_id';
                 }
                 if (empty($options['associationForeignKey'])) {
-                    $options['associationForeignKey'] = $inflector->underscore($options['class']) . '_id';
+                    $options['associationForeignKey'] = $inflector->underscore($options['className']) . '_id';
                 }
                 break;
         }
