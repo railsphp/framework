@@ -144,6 +144,14 @@ abstract class Base extends Persistence\PersistedModel\PersistedModel
         return false;
     }
     
+    /**
+     * Relation method.
+     */
+    public static function includes(/*...$args*/)
+    {
+        return call_user_func_array([self::all(), 'includes'], func_get_args());
+    }
+    
     protected static function persistence()
     {
         if (!static::$persistence) {
