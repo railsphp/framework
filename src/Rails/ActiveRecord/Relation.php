@@ -4,6 +4,10 @@ namespace Rails\ActiveRecord;
 use Zend\Db\Sql\Select;
 use Zend\Db\Sql\Predicate as ZfPredicate;
 use Zend\Paginator\Adapter\DbSelect as Paginator;
+use Rails\ActiveRecord\Exception\RecordNotFoundException;
+use Rails\ActiveRecord\Associations\Associations;
+use Rails\ActiveRecord\Associations\CollectionProxy;
+use Rails\ActiveModel\Attributes\Attributes;
 
 class Relation extends Relation\AbstractRelation
 {
@@ -23,6 +27,11 @@ class Relation extends Relation\AbstractRelation
      * @see selectDeletedRecords()
      */
     protected $deleted = false;
+    
+    /**
+     * @var Relation[]
+     */
+    protected $includes = [];
     
     public function __construct($modelClass)
     {
@@ -60,17 +69,39 @@ class Relation extends Relation\AbstractRelation
         return $this->records;
     }
     
+    /**
+     * Find record with primary key $id. If it's not found,
+     * RecordNotFoundException is thrown.
+     */
+    public function find($id)
+    {
+        $rel = $this->currentOrClone();
+        $modelClass = $this->modelClass;
+        $tableName  = $modelClass::tableName();
+        $first = $rel->where([$tableName . '.' . $modelClass::primaryKey() => $id])->first();
+        if (!$first) {
+            throw new RecordNotFoundException(sprintf(
+                "Couldn't find %s with %s=%s",
+                get_called_class(),
+                $modelClass::primaryKey(),
+                $id
+            ));
+        }
+        return $first;
+    }
+    
     public function first($limit = 1)
     {
-        $data = parent::first($limit);
+        $select = clone $this->select;
+        $this->orderByIdIfUnordered($select);
         
-        if ($data) {
+        $rows = $this->loadRecords($select);
+        
+        if ($rows) {
             if ($limit == 1) {
-                $modelClass = $this->modelClass;
-                $model = new $modelClass($data, false);
-                return $model;
+                return $this->buildSingleModel($rows);
             } else {
-                return $this->buildCollection($data);
+                return $this->buildCollection($rows);
             }
         }
         
@@ -83,15 +114,68 @@ class Relation extends Relation\AbstractRelation
         
         if ($data) {
             if ($limit == 1) {
-                $modelClass = $this->modelClass;
-                $model = new $modelClass($data, false);
-                return $model;
+                return $this->buildSingleModel(array_shift($data));
             } else {
                 return $this->buildCollection($data);
             }
         }
         
         return null;
+    }
+    
+    /**
+     * $rel->includes('posts');
+     * $rel->includes('posts', function($posts) { $posts->limit(5); });
+     * $rel->includes(['posts', 'comments']);
+     * $rel->includes([
+     *     'posts'    => function($posts) { $posts->limit(5); },
+     *     'comments' => function($cs) { $cs->includes('user'); }
+     * ]);
+     */
+    public function includes($assocNames, Closure $modifier = null)
+    {
+        $rel = $this->currentOrClone();
+        
+        $modelClass = $rel->modelClass;
+        $assocs = Associations::forClass($rel->modelClass);
+        
+        if ($assocNames && $modifier) {
+            $assocNames = [$assocNames => $modifier];
+        }
+        
+        if (!is_array($assocNames)) {
+            $assocNames = [ $assocNames ];
+        }
+        
+        foreach ($assocNames as $assocName => $modifier) {
+            if (is_int($assocName)) {
+                $assocName = $modifier;
+                $modifier  = null;
+            }
+            
+            if (!isset($this->includes[$assocName])) {
+                $options = $assocs->get($assocName);
+                
+                if ($options === false) {
+                    throw new \Exception(sprintf(
+                        "Association %s for class %s doesn't exist",
+                        $assocName,
+                        $modelClass
+                    ));
+                }
+                
+                $this->includes[$assocName] = [
+                    'options'  => $options,
+                    'relation' => new self($options['className'])
+                ];
+            }
+                
+            if ($modifier) {
+                $modifier($this->includes[$assocName]['relation']);
+            }
+        }
+        
+        return $rel;
     }
     
     /**
@@ -111,7 +195,7 @@ class Relation extends Relation\AbstractRelation
         return $model;
     }
     
-    /**
+    /*
      * Find first or initialize model.
      *
      * @param array $attributes additional attributes to initialize the model with.
@@ -171,13 +255,8 @@ class Relation extends Relation\AbstractRelation
         $modelClass = $this->modelClass;
         $paginator  = new Paginator($this->select, $modelClass::adapter());
         $items      = $paginator->getItems(($page - 1) * $perPage, $perPage);
+        $collection = $this->buildCollection($items->toArray());
         
-        $members = [];
-        foreach ($items->toArray() as $attributes) {
-            $members[] = new $modelClass($attributes, false);
-        }
-        
-        $collection = new Collection($members);
         $collection->setPage($page);
         $collection->setPerPage($perPage);
         $collection->setPaginator($paginator);
@@ -235,14 +314,101 @@ class Relation extends Relation\AbstractRelation
         return $select;
     }
     
+    protected function buildSingleModel($dataRow)
+    {
+        $modelClass = $this->modelClass;
+        $model      = new $modelClass($dataRow, false);
+        
+        if ($this->includes) {
+            $members = [$model->id() => $model];
+            $rowsPks = [$model->id()];
+            foreach ($this->includes as $assocName => $data) {
+                $this->buildInclude($data, $members, $rowsPks);
+            }
+        }
+        return $model;
+    }
+    
     protected function buildCollection($rows)
     {
         $members    = [];
         $modelClass = $this->modelClass;
+        $ownerPk    = $modelClass::primaryKey();
+        $rowsPks    = array_map(function($row) use ($ownerPk) { return $row[$ownerPk]; }, $rows);
+        
         foreach ($rows as $row) {
-            $members[] = new $modelClass($row, false);
+            $members[$row[$ownerPk]] = new $modelClass($row, false);
         }
-        return $modelClass::collection($members);
+        
+        if ($this->includes) {
+            foreach ($this->includes as $assocName => $data) {
+                $this->buildInclude($assocName, $data, $members, $rowsPks);
+            }
+            
+            $this->includes = [];
+        }
+        
+        return $modelClass::collection(array_values($members));
+    }
+    
+    # TODO: change method name.
+    protected function buildInclude($assocName, array $data, array $members, $rowsPks)
+    {
+        $modelClass = $this->modelClass;
+        $includeRel = $data['relation'];
+        $options    = $data['options'];
+        
+        switch ($options['type']) {
+            case 'hasMany':
+                foreach (
+                    $includeRel->where([$options['foreignKey'] => $rowsPks])
+                    as $model
+                ) {
+                    $owner = $members[$model->getAttribute($options['foreignKey'])];
+                    
+                    if (!$owner->getAssociation($assocName, false)) {
+                        $proxy = new CollectionProxy(
+                            $options['className'],
+                            $options['type'],
+                            $owner,
+                            $options['foreignKey']
+                        );
+                        $proxy->where([$options['foreignKey'] => $owner->id()]);
+                        $proxy->loaded = true;
+                        $proxy->records = $options['className']::collection();
+                        $owner->setAssociation(
+                            $assocName,
+                            $proxy,
+                            true
+                        );
+                    }
+                    
+                    $owner->getAssociation($assocName)->records[] = $model;
+                }
+                break;
+            
+            case 'belongsTo':
+                $otherPk = $options['className']::primaryKey();
+                $includeRel
+                    ->where([
+                        $otherPk => array_unique(
+                            array_map(
+                                function($x) use ($options) { return $x->getAttribute($options['foreignKey']); },
+                                $members
+                            )
+                        )
+                    ]);
+                
+                foreach ($members as $member) {
+                    $included = $includeRel->search($otherPk, $member->getAttribute($options['foreignKey']));
+                    $member->setAssociation(
+                        $assocName,
+                        $included,
+                        true
+                    );
+                }
+                break;
+        }
     }
     
     /**
