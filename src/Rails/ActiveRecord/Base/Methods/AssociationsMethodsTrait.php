@@ -24,11 +24,11 @@ trait AssociationsMethodsTrait
      *
      * return null|false|object
      */
-    public function getAssociation($name)
+    public function getAssociation($name, $autoLoad = true)
     {
         if (isset($this->loadedAssociations[$name])) {
             return $this->loadedAssociations[$name];
-        } elseif ($this->getAssociations()->exists($name)) {
+        } elseif ($autoLoad && $this->getAssociations()->exists($name)) {
             $this->loadedAssociations[$name] =
                 $this->getAssociations()->load($this, $name);
             return $this->loadedAssociations[$name];
@@ -40,9 +40,13 @@ trait AssociationsMethodsTrait
      * Associates an object to a one-to-one association.
      * Other associations are done in CollectionProxy.
      */
-    public function setAssociation($name, $value)
+    public function setAssociation($name, $value, $raw = false)
     {
-        return (new Setter())->set($this, $name, $value);
+        if ($raw) {
+            $this->loadedAssociations[$name] = $value;
+        } else {
+            return (new Setter())->set($this, $name, $value);
+        }
     }
     
     /**
