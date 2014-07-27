@@ -2,7 +2,6 @@
 namespace Rails\ActiveRecord\Persistence\PersistedModel\Methods;
 
 use Rails\ActiveRecord\Relation;
-use Rails\ActiveRecord\Exception\RecordNotFoundException;
 
 trait RelationMethodsTrait
 {
@@ -33,16 +32,7 @@ trait RelationMethodsTrait
     
     public static function find($id)
     {
-        $first = self::all()->where([static::primaryKey() => $id])->first();
-        if (!$first) {
-            throw new RecordNotFoundException(sprintf(
-                "Couldn't find %s with %s=%s",
-                get_called_class(),
-                static::primaryKey(),
-                $id
-            ));
-        }
-        return $first;
+        return self::all()->find($id);
     }
     
     public static function order($order)
