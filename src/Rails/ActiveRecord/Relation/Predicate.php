@@ -6,7 +6,7 @@ use Zend\Db\Sql\Predicate as ZfPredicate;
 use Zend\Db\Sql\Predicate\PredicateSet;
 use Rails\ActiveRecord\Relation;
 
-abstract class Predicate
+abstract class Predicate implements \IteratorAggregate
 {
     /**
      * The type of this predicate, where or having.
@@ -55,6 +55,20 @@ abstract class Predicate
         // throw new Exception\BadMethodCallException(
             // sprintf("Called unknown method %s::%s", __CLASS__, $method)
         // );
+    }
+    
+    /**
+     * This makes possible to do:
+     *
+     * ```php
+     * foreach (Post::where(['foo' => 'bar']) as $post) { ... }
+     * ```
+     *
+     * @return object
+     */
+    public function getIterator()
+    {
+        return $this->relation->getIterator();
     }
     
     # TODO: Check if this is possible:
