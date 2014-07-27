@@ -4,6 +4,7 @@ namespace Rails\ActiveRecord\Relation;
 use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Select;
 use Zend\Paginator\Adapter\DbSelect as Paginator;
+use Zend\Db\Adapter\Exception\InvalidQueryException;
 
 abstract class AbstractRelation implements \IteratorAggregate, \Countable
 {
@@ -163,12 +164,8 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
     public function first($limit = 1)
     {
         $select = clone $this->select;
+        $this->orderByIdIfUnordered($select);
         $select->limit($limit);
-        
-        if (!$select->getRawState(Select::ORDER)) {
-            $select->order('id');
-        }
-        
         $rows = $this->loadRecords($select);
         
         if (count($rows)) {
@@ -179,6 +176,19 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
             }
         }
         return null;
+    }
+    
+    protected function orderByIdIfUnordered($select)
+    {
+        if (!$select->getRawState(Select::ORDER)) {
+            $from = $select->getRawState(Select::TABLE);
+            if ($from) {
+                $order = $from . '.id';
+            } else {
+                $order = 'id';
+            }
+            $select->order($order);
+        }
     }
     
     public function take($limit = 1)
@@ -338,7 +348,14 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
     {
         $sql     = $this->getSqlString($select);
         $adapter = $this->adapter();
-        $records = $adapter->query($sql, $adapter::QUERY_MODE_EXECUTE)->toArray();
+        
+        try {
+            $records = $adapter->query($sql, $adapter::QUERY_MODE_EXECUTE)->toArray();
+        } catch (InvalidQueryException $e) {
+            $message = $e->getMessage() . "\nQuery:\n" . $sql;
+            throw new InvalidQueryException($message, 0, $e);
+        }
+        
         return $records;
     }
     
