@@ -88,9 +88,8 @@ class Attributes
     public static function getAttributesFor($className)
     {
         if (!self::attributesSetFor($className)) {
-            throw new Exception\RuntimeException(
-                sprintf("Attributes not set for class %s", $className)
-            );
+            # Force initialize.
+            $className::getAttributeSet();
         }
         return self::$classAttributes[$className];
     }
