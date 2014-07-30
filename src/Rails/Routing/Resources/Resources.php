@@ -116,7 +116,13 @@ class Resources
     
     public function normalizeName($name)
     {
-        return str_replace('/', '_', substr($this->normalizePath($name), 1, -1));
+        return preg_replace_callback(
+            '/_([a-z])/',
+            function($m) {
+                return strtoupper($m[1]);
+            },
+            str_replace('/', '_', substr($this->normalizePath($name), 1))
+        );
     }
     
     public function set()
@@ -416,18 +422,18 @@ class Resources
                 $on = 'addNew';
             }
             unset($options['on']);
-            $this->$on(function(){
+            $this->$on(function() use ($path, $options) {
                 $this->decomposedMatch($path, $options);
             });
         } else {
             switch ($this->scope['scopeLevel']) {
                 case 'resources':
-                    $this->nested(function() {
+                    $this->nested(function() use ($path, $options) {
                         $this->decomposedMatch($path, $options);
                     });
                     break;
                 case 'resource':
-                    $this->member(function() {
+                    $this->member(function() use ($path, $options) {
                         $this->decomposedMatch($path, $options);
                     });
                     break;
