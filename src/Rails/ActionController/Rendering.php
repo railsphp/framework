@@ -31,6 +31,9 @@ class Rendering
                 break;
             
             case 'template':
+                # Template must be relative to the view root, so we
+                # have to remove prefixes.
+                $options['prefixes'] = [];
                 return $this->renderTemplate($value, $options);
                 break;
             

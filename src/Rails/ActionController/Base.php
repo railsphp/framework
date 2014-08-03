@@ -557,16 +557,24 @@ abstract class Base
     {
         $this->actionName = $actionName;
         
+        $runner = new Base\CallbacksRunner($this);
+        
         if ($this->isActionMethodValid($actionName)) {
-            $runner = new Base\CallbacksRunner($this);
-            
             $runner->runRequestAction($actionName, function() {
                 $this->{$this->actionName}();
             });
         } else {
             try {
-                $this->render();
+                $runner->runRequestAction($actionName, function() {
+                    if (!$this->isPerformed()) {
+                        $this->render();
+                    }
+                });
             } catch (TemplateMissingException $e) {
+                # TODO: the TemplateMissingException should be somehow "filtered"
+                # in cases like a callback tries to render a template that doesn't exist; the
+                # error message indicating which template is missing will be overriden
+                # by the exception below, which will show an incorrect message instead.
                 throw new Exception\UnknownActionException(
                     sprintf(
                         "The action '%s' could not be found for %s",

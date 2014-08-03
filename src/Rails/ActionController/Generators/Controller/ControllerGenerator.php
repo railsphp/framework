@@ -11,9 +11,9 @@ class ControllerGenerator extends Generator
     
     public function extractNamespace()
     {
-        if (strpos($this->arg('name'), '.') !== false) {
-            $this->classNamespace = substr($this->arg('name'), 0, strrpos($this->arg('name'), '.'));
-            $this->className = substr($this->arg('name'), strrpos($this->arg('name'), '.') + 1);
+        if (strpos($this->arg('name'), '/') !== false) {
+            $this->classNamespace = substr($this->arg('name'), 0, strrpos($this->arg('name'), '/'));
+            $this->className = substr($this->arg('name'), strrpos($this->arg('name'), '/') + 1);
         } else {
             $this->className = $this->arg('name');
         }
@@ -27,7 +27,7 @@ class ControllerGenerator extends Generator
     protected function defineNamespace()
     {
         if ($this->classNamespace) {
-            return 'namespace ' . str_replace('.', '\\', $this->classNamespace) . ";\n\n";
+            return 'namespace ' . $this->classNamespace . ";\n\n";
         }
     }
     
@@ -43,9 +43,9 @@ class ControllerGenerator extends Generator
     protected function filePath()
     {
         if ($this->classNamespace) {
-            $namespaces = str_replace('.', '/', $this->classNamespace) . '/';
+            $namespaces = $this->classNamespace . '/';
         } else {
-            $namespaces = '/';
+            $namespaces = '';
         }
         return 'app/controllers/' . $namespaces . $this->className . 'Controller.php';
     }
