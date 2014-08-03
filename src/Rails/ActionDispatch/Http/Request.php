@@ -308,8 +308,8 @@ class Request
     
     protected function mapKeysToUploadedFiles(array $keys)
     {
-        $current = $this->files();
-        foreach (func_get_args() as $key) {
+        $current = $this->uploadedFiles();
+        foreach ($keys as $key) {
             if (isset($current[$key])) {
                 $current = $current[$key];
             } else {
