@@ -38,7 +38,7 @@ class Loader
         $lastMTime = $cache->read($mTimeKey);
         $routeSet = null;
         
-        if ($lastMTime && $lastMTime == $mTime) {
+        if (false && $lastMTime && $lastMTime == $mTime) {
             $key = $this->routesCacheKey();
             $routes = $cache->read($key);
             
@@ -62,7 +62,11 @@ class Loader
         }
         
         if ($this->app->request()) {
-            $routeSet->setBasePath($this->app->request()->basePath());
+            $basePath = $this->app->request()->basePath();
+            if ($basePath == '/') {
+                $basePath = '';
+            }
+            $routeSet->setBasePath($basePath);
         }
         
         if (!$this->app->config()['serve_static_assets']) {
@@ -87,6 +91,7 @@ class Loader
         if (!is_file($file)) {
             throw new \InvalidArgumentException(sprintf(
                 "Configuration file for environment '%s' not found: %s",
+                $environment,
                 $file
             ));
         }
@@ -275,7 +280,9 @@ class Loader
             'allowProfiler' => $allowProfiler
         ];
         
-        if (isset($connections['default'])) {
+        if (isset($connections[$config['environment']])) {
+            $defaultConnction = $config['environment'];
+        } elseif (isset($connections['default'])) {
             $defaultConnction = 'default';
         } else {
             $defaultConnction = key($connections);

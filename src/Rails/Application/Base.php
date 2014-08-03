@@ -64,6 +64,9 @@ abstract class Base
         
         # Setup Logger
         $this->setUpLogger();
+        # Setup I18n
+        $this->getService('i18n')->loader()
+            ->addPath($config['paths']['root']->expand('config', 'locales'));
         
         if ($config['error']['report_types']) {
             set_error_handler([$this, 'errorHandler'], $config['error']['report_types']);
