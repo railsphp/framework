@@ -114,7 +114,9 @@ class Errors
             }
             
             $infl     = self::services()->get('inflector');
-            $attrName = $infl->humanize($attribute);
+            $model    = $this->model;
+            $attrName = $infl->humanize($attribute)->toString();
+            $attrName = $model::humanAttributeName($attribute, ['default' => $attrName]);
             
             $fullMessage = self::services()->get('i18n')->translate('errors.format', [
                 'default'   => '%{attribute} %{message}',
@@ -194,12 +196,12 @@ class Errors
         
         $infl = self::services()->get('inflector');
         
+        $model = $this->model;
         $options = array_merge([
             'default'   => $defaults,
             'model'     => $infl->humanize($infl->underscore(get_class($this->model))),
-            'attribute' => $infl->humanize($properAttr),
-            'value'     => $value,
-            'exception' => true
+            'attribute' => $model::humanAttributeName($properAttr),
+            'value'     => $value
         ], $options);
         
         $message = self::services()->get('i18n')->translate($key, $options);

@@ -6,8 +6,6 @@ use Rails\ActiveRecord\Exception;
 
 class ModelSchema
 {
-    protected static $metadatas = [];
-    
     protected $tableName;
     
     /**

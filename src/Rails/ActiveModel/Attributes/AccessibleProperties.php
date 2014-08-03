@@ -68,8 +68,9 @@ class AccessibleProperties
      * An accessible property is either a public property, or a
      * property that has a setter method named like `setPropName`.
      * Returns an array whose keys are the property name, and the value
-     * is the setter name if the property has a setter, or `true` if its
-     * a public property.
+     * is the setter name if the property has a setter, or an array with
+     * the actual property name under the `propName` key if its a public
+     * property.
      *
      * @param string $className
      * @return array
@@ -80,12 +81,17 @@ class AccessibleProperties
         $props = [];
         
         foreach ($refl->getProperties() as $prop) {
-            if ($prop->getDeclaringClass()->getName() == 'Rails\ActiveModel\Base') {
+            if (
+                $prop->getDeclaringClass()->getName() == 'Rails\ActiveModel\Base' ||
+                $prop->getDeclaringClass()->getName() == 'Rails\ActiveRecord\Base'
+            ) {
                 break;
             }
             
             if ($prop->isPublic()) {
-                $props[$prop->getName()] = true;
+                $props[$prop->getName()] = [
+                    'propName' => $prop->getName()
+                ];
             } else {
                 $params = [];
                 

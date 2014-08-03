@@ -48,6 +48,16 @@ class AbstractManager
         $this->options = $options;
     }
     
+    public function connectionExists($connectionName)
+    {
+        return isset($this->connections[$connectionName]);
+    }
+    
+    public function removeAdapter($connectionName)
+    {
+        unset($this->adapters[$connectionName]);
+    }
+    
     /**
      * Get the name of the default connection.
      *

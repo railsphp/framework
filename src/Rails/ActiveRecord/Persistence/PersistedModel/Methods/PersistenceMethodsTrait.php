@@ -262,7 +262,7 @@ trait PersistenceMethodsTrait
     
     protected function createOrUpdate(array $options = [])
     {
-        $this->transaction(function() use ($options) {
+        return $this->transaction(function() use ($options) {
             if ($this->isNewRecord()) {
                 return $this->createRecord($options);
             } else {

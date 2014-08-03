@@ -56,9 +56,52 @@ abstract class Base
         return self::$createdReflections[$class];
     }
     
+    public static function i18nKey()
+    {
+        return self::getService('inflector')->underscore(get_called_class())->toString();
+    }
+    
     public static function i18nScope()
     {
         return 'activemodel';
+    }
+    
+    # TODO: Move to a class that will use cache.
+    public static function humanAttributeName($attrName, array $options = [])
+    {
+        $attributeScope = static::i18nScope() . '.attributes';
+        $defaults       = [];
+        $currentRefl    = static::getReflection();
+        
+        while ($currentRefl) {
+            $defaults[] = sprintf(
+                '%s.%s.%s',
+                $attributeScope,
+                $currentRefl->getMethod('i18nKey')->invoke(null),
+                $attrName
+            );
+            
+            $currentRefl = $currentRefl->getParentClass();
+            if (
+                $currentRefl &&
+                (
+                    $currentRefl->getName() == 'Rails\ActiveRecord\Base' ||
+                    $currentRefl->getName() == 'Rails\ActiveModel\Base'
+                )
+            ) {
+                $currentRefl = false;
+            }
+        }
+        
+        $defaults[] = 'attributes.' . $attrName;
+        if (isset($options['default'])) {
+            $defaults[] = $options['default'];
+        }
+        $defaults['literal'] = self::getService('inflector')->humanize($attrName)->toString();
+        
+        $key = array_shift($defaults);
+        $options['default'] = $defaults;
+        return self::getService('i18n')->translate($key, $options);
     }
     
     public function __construct(array $attributes = [])

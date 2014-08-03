@@ -12,23 +12,6 @@ trait AttributedModelTrait
      */
     protected $attributes;
     
-    // public static function isPublicProperty($propName, $class = null)
-    // {
-        // if (!$class) {
-            // $class = get_called_class();
-        // }
-        // if (!isset(self::$publicClassProperties[$class][$propName])) {
-            // if (!isset(self::$publicClassProperties[$class])) {
-                // self::$publicClassProperties[$class] = [];
-            // }
-            // $reflection = self::getReflection();
-            // $ret = $reflection->hasProperty($propName) &&
-                    // $reflection->getProperty($propName)->isPublic();
-            // self::$publicClassProperties[$class][$propName] = $ret;
-        // }
-        // return self::$publicClassProperties[$class][$propName];
-    // }
-    
     public static function getAttributeSet()
     {
         static::initAttributeSet();
@@ -103,8 +86,8 @@ trait AttributedModelTrait
         if (Attributes::isClassAttribute(get_called_class(), $name)) {
             return $this->getAttribute($name);
         } elseif ($type = AccessibleProperties::getProperty(get_called_class(), $name)) {
-            if ($type === true) {
-                return $this->$name;
+            if (isset($type['propName'])) {
+                return $this->{$type['propName']};
             } elseif ($type[0]) {
                 return $this->$name();
             }
@@ -152,57 +135,41 @@ trait AttributedModelTrait
     {
         $modelAttrs = $this->getAttributes();
         
-        $accProps = AccessibleProperties::getPropertiesUnderscored(get_called_class());
-        
         if (!$withoutProtection) {
             $attrAccessible = $this->getAccessibleAttributes();
         }
         
+        $this->setAndFilterProperties($attributes);
+        
         foreach ($attributes as $attrName => $value) {
-            // $attrName = static::properAttributeName($key);
-            
             if (!$withoutProtection && $attrAccessible) {
                 if (!in_array($attrName, $attrAccessible)) {
                     continue;
                 }
             }
             
-            if (isset($accProps[$attrName])) {
-                if ($accProps[$attrName] === true) {
-                    $this->$attrName = $value;
-                    continue;
-                } else {
-                    if ($accProps[$attrName][1]) {
-                        $this->{$accProps[$attrName]}($value);
-                        continue;
-                    }
-                }
-            } else {
-                
-            // if (!$this->setAccessibleProperty($attrName, $value)) {
-                # TODO: Check if attribute exists, so if it doesn't an
-                # exception will be thrown below.
-                $modelAttrs->set($attrName, $value);
-                continue;
-            }
-            
-            throw new Exception\InvalidArgumentException(
-                sprintf(
-                    "Trying to set unknown attribute %s",
-                    $attrName
-                )
-            );
-            // }
-            // if ($modelAttrs->isAttribute($attrName)) {
-                // $modelAttrs->set($attrName, $value);
-            // } elseif ($setterMethod = $this->setterExists($attrName)) {
-                // $this->$setterMethod($value);
-            // } elseif (self::isPublicProperty($attrName)) {
-                // $this->$attrName = $value;
-            // }
+            $modelAttrs->set($attrName, $value);
         }
         
         return $this;
+    }
+    
+    protected function setAndFilterProperties(array &$attributes)
+    {
+        $accProps = AccessibleProperties::getPropertiesUnderscored(get_called_class());
+        
+        foreach ($attributes as $attrName => $value) {
+            if (isset($accProps[$attrName])) {
+                if (isset($accProps[$attrName]['propName'])) {
+                    $this->{$accProps[$attrName]['propName']} = $value;
+                } else {
+                    if ($accProps[$attrName][1]) {
+                        $this->{$accProps[$attrName]}($value);
+                    }
+                }
+                unset($attributes[$attrName]);
+            }
+        }
     }
     
     /**
@@ -282,12 +249,6 @@ trait AttributedModelTrait
         return [];
     }
     
-    // protected function filterProtectedAttributes($attrsToFilter)
-    // {
-        // $accessibleAttrs = array_fill_keys($this->getAccessibleAttributes(), null);
-        // return array_intersect_key($attrsToFilter, $accessibleAttrs);
-    // }
-    
     /**
      * @see initAttrsDirtyModel()
      */
@@ -305,6 +266,7 @@ trait AttributedModelTrait
         $this->attributes = new Attributes($className, $this->defaultAttributes());
         
         if ($attributes) {
+            $this->setAndFilterProperties($attributes);
             $this->getAttributes()->set($attributes, null, $this->initAttrsDirtyModel());
         }
     }

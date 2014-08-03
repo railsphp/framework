@@ -10,8 +10,12 @@ class Loader
     {
         switch ($options['type']) {
             case 'hasOne':
-            case 'belongsTo':
             case 'hasMany':
+                if (isset($options['through'])) {
+                    return $this->loadThrough($record, $name, $options);
+                }
+                
+            case 'belongsTo':
             case 'hasAndBelongsToMany':
                 return $this->{'load' . ucfirst($options['type'])}($record, $name, $options);
             
@@ -20,6 +24,12 @@ class Loader
                     sprintf("Trying to load unknown association type %s", $options['type'])
                 );
         }
+    }
+    
+    protected function loadThrough($record, $name, array $options)
+    {
+        $throughName = $options['through'];
+        return $record->getAssociations($throughName)->load($name);
     }
     
     protected function loadHasOne($record, $name, array $options)

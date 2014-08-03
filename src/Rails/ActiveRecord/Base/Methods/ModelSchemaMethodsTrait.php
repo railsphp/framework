@@ -16,7 +16,7 @@ trait ModelSchemaMethodsTrait
     public static function table()
     {
         $class = get_called_class();
-        // $class = static::connection()->getName();
+        
         if (!isset(self::$modelSchemas[$class])) {
             $schema = static::initTable();
             self::$modelSchemas[$class] = $schema;
@@ -31,7 +31,7 @@ trait ModelSchemaMethodsTrait
      *
      * @return string
      */
-    static public function tableName()
+    public static function tableName()
     {
         if (static::TABLE_NAME) {
             return static::TABLE_NAME;
@@ -50,7 +50,7 @@ trait ModelSchemaMethodsTrait
      *
      * @return string
      */
-    static public function tableNamePrefix()
+    public static function tableNamePrefix()
     {
         return static::TABLE_NAME_PREFIX;
     }
@@ -60,9 +60,19 @@ trait ModelSchemaMethodsTrait
      *
      * @return string
      */
-    static public function tableNameSuffix()
+    public static function tableNameSuffix()
     {
         return static::TABLE_NAME_SUFFIX;
+    }
+    
+    public static function clearMetadatas()
+    {
+        self::$metadatas = [];
+    }
+    
+    public static function clearModelSchemas()
+    {
+        self::$modelSchemas = [];
     }
 
     /**
@@ -71,6 +81,7 @@ trait ModelSchemaMethodsTrait
     protected static function initTable()
     {
         $connectionName = static::adapter()->getDriver()->getConnection()->getName();
+        
         if (!isset(self::$metadatas[$connectionName])) {
             if (self::getService('rails.config')['use_cache']) {
                 $metadata = new Metadata\CachedMetadata(static::adapter());

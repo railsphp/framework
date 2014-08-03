@@ -18,7 +18,7 @@ class Manager extends AbstractManager
     public function getAdapter($connectionName, array $options = [])
     {
         if (!isset($this->adapters[$connectionName])) {
-            if (!isset($this->connections[$connectionName])) {
+            if (!$this->connectionExists($connectionName)) {
                 throw new Exception\RuntimeException(
                     sprintf('Connection doesn\'t exist: %s', $connectionName)
                 );

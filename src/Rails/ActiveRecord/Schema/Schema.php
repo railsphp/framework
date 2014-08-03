@@ -137,9 +137,9 @@ class Schema
                 $column = new Column\Boolean($name);
                 break;
             
-            // case 'primaryKey':
-                
-                // break;
+            case 'date':
+                $column = new Ddl\Column\Date($name);
+                break;
             
             default:
                 throw new Exception\RuntimeException(
@@ -156,6 +156,28 @@ class Schema
         }
         
         return $column;
+    }
+    
+    public function dropDatabase($dbName)
+    {
+        if ($this->adapter->getDriver()->getConnection()->getDriverName() == 'Sqlite') {
+            $dbFile = \Rails::config()['paths']['root']->expand($dbName);
+            
+            if (is_file($dbFile)) {
+                unlink($dbFile);
+            }
+        } else {
+            $ddl = new DropDatabase($dbName);
+            $this->queryAdapter($ddl);
+        }
+    }
+    
+    public function createDatabase($dbName)
+    {
+        if ($this->adapter->getDriver()->getConnection()->getDriverName() != 'Sqlite') {
+            $ddl = new CreateDatabase($dbName);
+            $this->queryAdapter($ddl);
+        }
     }
     
     public function tableExists($tableName)

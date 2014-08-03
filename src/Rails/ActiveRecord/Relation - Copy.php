@@ -28,10 +28,7 @@ class Relation extends Relation\AbstractRelation
      */
     protected $deleted = false;
     
-    /**
-     * @var Relation[]
-     */
-    protected $includes = [];
+    protected $includesData = [];
     
     public function __construct($modelClass)
     {
@@ -52,17 +49,6 @@ class Relation extends Relation\AbstractRelation
     {
         $this->load();
         return call_user_func_array([$this->records, $method], $params);
-    }
-    
-    public function __clone()
-    {
-        parent::__clone();
-        
-        $includes       = $this->includes;
-        $this->includes = [];
-        foreach ($includes as $name => $include) {
-            $this->includes[$name] = clone $include;
-        }
     }
     
     public function deleted($value = true)
@@ -103,7 +89,14 @@ class Relation extends Relation\AbstractRelation
     
     public function first($limit = 1)
     {
-        $rows = parent::first($limit);
+        $select = clone $this->select;
+        $this->orderByIdIfUnordered($select);
+        
+        if (!$this->includesData) {
+            $select->limit($limit);
+        }
+        
+        $rows = $this->loadRecords($select);
         
         if ($rows) {
             if ($limit == 1) {
@@ -132,58 +125,103 @@ class Relation extends Relation\AbstractRelation
     }
     
     /**
-     * $rel->includes('posts');
-     * $rel->includes('posts', function($posts) { $posts->limit(5); });
-     * $rel->includes(['posts', 'comments']);
-     * $rel->includes([
-     *     'posts'    => function($posts) { $posts->limit(5); },
-     *     'comments' => function($cs) { $cs->includes('user'); }
-     * ]);
+     * $rel->includes('posts', 'comments');
+     * $rel->includes(['posts', 'comments' => 'users']);
+     * $rel->includes(['posts', 'comments' => ['users' => etc...]]);
      */
-    public function includes($assocNames, \Closure $modifier = null)
+    public function includes(/*...$args*/)
     {
         $rel = $this->currentOrClone();
         
-        $modelClass = $rel->modelClass;
+        $args = func_get_args();
+        
+        if (is_array($args[0])) {
+            $args = $args[0];
+        }
+        
         $assocs = Associations::forClass($rel->modelClass);
         
-        if ($assocNames && $modifier) {
-            $assocNames = [$assocNames => $modifier];
-        }
+        $modelClass = $rel->modelClass;
+        $ownerTableName = $modelClass::tableName();
+        $ownerCols = $rel->buildColumnsArgs($modelClass);
         
-        if (!is_array($assocNames)) {
-            $assocNames = [ $assocNames ];
-        }
-        
-        foreach ($assocNames as $assocName => $modifier) {
-            if (is_int($assocName)) {
-                $assocName = $modifier;
-                $modifier  = null;
-            }
-            
-            if (!isset($this->includes[$assocName])) {
-                $options = $assocs->get($assocName);
+        foreach ($args as $key => $arg) {
+            if (is_string($arg)) {
+                $options = $assocs->get($arg);
                 
                 if ($options === false) {
                     throw new \Exception(sprintf(
-                        "Association '%s' for class %s doesn't exist",
-                        $assocName,
+                        "Association %s for class %s doesn't exist",
+                        $arg,
                         $modelClass
                     ));
                 }
                 
-                $this->includes[$assocName] = [
-                    'options'  => $options,
-                    'relation' => new self($options['className'])
-                ];
-            }
+                $cols = $rel->buildColumnsArgs($options['className'], $arg, $options['type'], $options['foreignKey']);
                 
-            if ($modifier) {
-                $modifier($this->includes[$assocName]['relation']);
+                $tableName = $options['className']::tableName();
+                
+                switch ($options['type']) {
+                    case 'hasMany':
+                        $on = $tableName . '.' . $options['foreignKey']
+                                . ' = ' . $ownerTableName . '.' . $modelClass::primaryKey();
+                        
+                        $rel->join(
+                            $tableName,
+                            $on,
+                            $cols,
+                            'left outer'
+                        );
+                        break;
+                    
+                    case 'belongsTo':
+                        $on = $ownerTableName . '.' . $options['foreignKey']
+                                . ' = ' . $tableName . '.' . $modelClass::primaryKey();
+                        
+                        $rel->join(
+                            $tableName,
+                            $on,
+                            $cols,
+                            'left outer'
+                        );
+                        break;
+                }
+                    
             }
         }
         
+        $rel->getSelect()->columns($ownerCols);
         return $rel;
+    }
+    
+    protected function buildColumnsArgs($className, $assocName = null, $assocType = null, $foreignKey = null)
+    {
+        $attrs = Attributes::getAttributesFor($className);
+        $tableName = $className::tableName();
+        $columns = [];
+        
+        $count = count($this->includesData);
+        $i = 0;
+        $includeData = [
+            'className' => $className,
+            'rows' => []
+        ];
+        
+        if ($assocName && $assocType && $foreignKey) {
+            $includeData['assocName'] = $assocName;
+            $includeData['assocType'] = $assocType;
+            $includeData['foreignKey'] = $foreignKey;
+        }
+        
+        foreach ($attrs->attributes() as $attr) {
+            $attrAlias = 't' . $count . '_r' . $i;
+            $columns[$attrAlias] = $attr->name();
+            $i++;
+            $includeData['rows'][$attrAlias] = $attr->name();
+        }
+        
+        $this->includesData[] = $includeData;
+        return $columns;
     }
     
     /**
@@ -322,17 +360,26 @@ class Relation extends Relation\AbstractRelation
         return $select;
     }
     
-    protected function buildSingleModel($dataRow)
+    protected function buildSingleModel($dataRows)
     {
         $modelClass = $this->modelClass;
-        $model      = new $modelClass($dataRow, false);
-        
-        if ($this->includes) {
-            $members = [$model->id() => $model];
-            $rowsPks = [$model->id()];
-            foreach ($this->includes as $assocName => $data) {
-                $this->buildInclude($assocName, $data, $members, $rowsPks);
+        if ($this->includesData) {
+            $ownerData = array_shift($this->includesData);
+            $ownerIdAlias = array_search($modelClass::primaryKey(), $ownerData['rows']);
+            $firsRow = reset($dataRows);
+            
+            foreach ($ownerData['rows'] as $alias => $attrName) {
+                $ownerAttrs[$attrName] = $firsRow[$alias];
             }
+            
+            $model = new $modelClass($ownerAttrs, false);
+            
+            foreach ($dataRows as $dataRow) {
+                $this->processRow($dataRow, $model);
+            }
+        } else {
+            $dataRow = array_shift($dataRows);
+            $model = new $modelClass($dataRow, false);
         }
         return $model;
     }
@@ -341,94 +388,90 @@ class Relation extends Relation\AbstractRelation
     {
         $members    = [];
         $modelClass = $this->modelClass;
-        $ownerPk    = $modelClass::primaryKey();
-        $rowsPks    = array_map(function($row) use ($ownerPk) { return $row[$ownerPk]; }, $rows);
         
-        foreach ($rows as $row) {
-            $members[$row[$ownerPk]] = new $modelClass($row, false);
-        }
-        
-        if ($this->includes) {
-            foreach ($this->includes as $assocName => $data) {
-                $this->buildInclude($assocName, $data, $members, $rowsPks);
+        if ($this->includesData) {
+            $owners         = [];
+            $ownerData      = array_shift($this->includesData);
+            $ownerIdAlias   = array_search($modelClass::primaryKey(), $ownerData['rows']);
+            
+            foreach ($rows as $row) {
+                if (!isset($owners[$row[$ownerIdAlias]])) {
+                    foreach ($ownerData['rows'] as $alias => $attrName) {
+                        $parentAttrs[$attrName] = $row[$alias];
+                    }
+                    $owners[$row[$ownerIdAlias]] = new $modelClass($parentAttrs, false);
+                }
+                $owner = $owners[$row[$ownerIdAlias]];
+                
+                $this->processRow($row, $owner);
             }
             
-            $this->includes = [];
+            $members = array_values($owners);
+        } else {
+            foreach ($rows as $row) {
+                $members[] = new $modelClass($row, false);
+            }
         }
         
-        return $modelClass::collection(array_values($members));
+        $this->includesData = [];
+        return $modelClass::collection($members);
     }
     
-    # TODO: change method name.
-    protected function buildInclude($assocName, array $data, array $members, $rowsPks)
+    protected function processRow(array $row, $owner)
     {
-        $modelClass = $this->modelClass;
-        $includeRel = $data['relation'];
-        $options    = $data['options'];
-        
-        switch ($options['type']) {
-            case 'hasMany':
-                foreach (
-                    $includeRel->where([$options['foreignKey'] => $rowsPks])
-                    as $model
-                ) {
-                    $owner = $members[$model->getAttribute($options['foreignKey'])];
-                    
-                    if (!$owner->getAssociation($assocName, false)) {
+        foreach ($this->includesData as $include) {
+            $idAlias = array_search($include['className']::primaryKey(), $include['rows']);
+            
+            if (!$row[$idAlias]) {
+                continue;
+            }
+            
+            $attributes = [];
+            foreach ($include['rows'] as $alias => $attrName) {
+                $attributes[$attrName] = $row[$alias];
+            }
+            
+            $includeClassName = $include['className'];
+            
+            switch ($include['assocType']) {
+                case 'hasMany':
+                    if (!$owner->getAssociation($include['assocName'], false)) {
                         $proxy = new CollectionProxy(
-                            $options['className'],
-                            $options['type'],
+                            $include['className'],
+                            $include['assocType'],
                             $owner,
-                            $options['foreignKey']
+                            $include['foreignKey']
                         );
-                        $proxy->where([$options['foreignKey'] => $owner->id()]);
+                        $proxy->where([$include['foreignKey'] => $owner->id()]);
                         $proxy->loaded = true;
-                        $proxy->records = $options['className']::collection();
+                        $proxy->records = $include['className']::collection();
                         $owner->setAssociation(
-                            $assocName,
+                            $include['assocName'],
                             $proxy,
                             true
                         );
                     }
                     
-                    $owner->getAssociation($assocName)->records[] = $model;
-                }
-                break;
-            
-            case 'hasOne':
-                $includeRel->where([$options['foreignKey'] => $rowsPks]);
+                    $owner->getAssociation($include['assocName'])->records[] = new $include['className']($attributes, false);
+                    break;
                 
-                foreach ($members as $member) {
-                    $included = $includeRel->search($options['foreignKey'], $member->id());
-                    $member->setAssociation(
-                        $assocName,
-                        $included,
-                        true
-                    );
-                }
-                break;
-            
-            case 'belongsTo':
-                $assocPk = $options['className']::primaryKey();
-                $includeRel
-                    ->where([
-                        $assocPk => array_unique(
-                            array_map(
-                                function($x) use ($options) { return $x->getAttribute($options['foreignKey']); },
-                                $members
-                            )
-                        )
-                    ]);
-                
-                foreach ($members as $member) {
-                    $included = $includeRel->search($assocPk, $member->getAttribute($options['foreignKey']));
-                    $member->setAssociation(
-                        $assocName,
-                        $included,
-                        true
-                    );
-                }
-                break;
+                case 'belongsTo':
+                    if (!$owner->getAssociation($include['assocName'], false)) {
+                        $attrs = [];
+                        
+                        foreach ($include['rows'] as $alias => $attrName) {
+                            $attrs[$attrName] = $row[$alias];
+                        }
+                        
+                        $assoc = new $include['className']($attrs, false);
+                        $owner->setAssociation(
+                            $include['assocName'],
+                            $assoc,
+                            true
+                        );
+                    }
+                    break;
+            }
         }
     }
     
