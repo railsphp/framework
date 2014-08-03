@@ -34,4 +34,33 @@ class ClassTools
             return '';
         }
     }
+    
+    /**
+     * Creates a Closure that will be bound to $object, and will
+     * require the file passed to it as argument. This is useful
+     * when requiring files inside an object, but want it to
+     * stay in the public scope only.
+     *
+     * @param object $object
+     * @return \Closure
+     */
+    public static function generateFileIncluder($object)
+    {
+        return generateFileIncluder($object);
+    }
+}
+
+/**
+ * Creating a Closure inside a static method will cause it to be
+ * an "static closure" which cannot be bound to any object; this
+ * can be avoided by using a function.
+ *
+ * @param object $object
+ * @return \Closure
+ */
+function generateFileIncluder($object) {
+    $includer = function($filepath) {
+        require $filepath;
+    };
+    return $includer->bindTo($object, $object);
 }
