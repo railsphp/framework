@@ -207,7 +207,7 @@ class Rails
          */
         $sm->setFactory('i18n', function() {
             $tr = new Rails\I18n\LoadingTranslator();
-            $tr->setLocale('en');
+            $tr->setDefaultLocale('en');
             $tr->setLoader(new Rails\I18n\Loader());
             
             

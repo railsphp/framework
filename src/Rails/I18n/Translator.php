@@ -38,17 +38,17 @@ class Translator
     /**
      * Default locale for translations.
      */
-    protected $locale;
+    protected $defaultLocale;
     
     /**
      * Locales to fallback to if a translation is missing.
      */
     protected $fallbacks = [];
     
-    public function __construct($locale = null, array $fallbacks = [])
+    public function __construct($defaultLocale = null, array $fallbacks = [])
     {
-        if ($locale) {
-            $this->setLocale($locale);
+        if ($defaultLocale) {
+            $this->setDefaultLocale($defaultLocale);
         }
         if ($fallbacks) {
             $this->setFallbacks($fallbacks);
@@ -58,16 +58,16 @@ class Translator
     /**
      * Sets default locale for translations.
      *
-     * @param string $locale
+     * @param string $defaultLocale
      */
-    public function setLocale($locale)
+    public function setDefaultLocale($defaultLocale)
     {
-        $this->locale = $locale;
+        $this->defaultLocale = $defaultLocale;
     }
     
-    public function locale()
+    public function defaultLocale()
     {
-        return $this->locale;
+        return $this->defaultLocale;
     }
     
     /**
@@ -114,7 +114,7 @@ class Translator
      * $t->translate('foo.bar', [], 'en'); //-> "Hello foo!"
      *
      * If a default locale is set, the third argument can be ommited:
-     * $t->setLocale('en');
+     * $t->setDefaultLocale('en');
      * $t->translate('foo.bar'); //-> "Hello foo!"
      *
      * Assuming 'foo.bar' is "The time is %{time}", pass the value for %{time} in the
@@ -134,12 +134,12 @@ class Translator
     public function translate($key, array $options = [], $locale = null)
     {
         if (null === $locale) {
-            if (null === $this->locale) {
+            if (null === $this->defaultLocale) {
                 throw new Exception\RuntimeException(
                     "No default locale set"
                 );
             }
-            $locale = $this->locale;
+            $locale = $this->defaultLocale;
         }
         
         $key   = $this->normalizeKey($key);
@@ -175,19 +175,28 @@ class Translator
             if ($values) {
                 $entry = $this->interpolate($entry, $values);
             }
-        } elseif (isset($options['exception']) && $options['exception']) {
-            $message = sprintf("Missing translation '%s'", implode(self::DEFAULT_SEPARATOR, $key));
+        } else {
+            $message = sprintf(
+                "translation missing: %s%s%s",
+                $locale,
+                self::DEFAULT_SEPARATOR,
+                implode(self::DEFAULT_SEPARATOR, $key)
+            );
             
-            if (isset($options['default'])) {
-                $message .= " with defaults:\n";
-                if (is_array($options['default'])) {
-                    $message .= implode("\n", $options['default']);
-                } else {
-                    $message .= $options['default'];
+            if (isset($options['exception']) && $options['exception']) {
+                if (isset($options['default'])) {
+                    $message .= " with defaults:\n";
+                    if (is_array($options['default'])) {
+                        $message .= implode("\n", $options['default']);
+                    } else {
+                        $message .= $options['default'];
+                    }
                 }
+                
+                throw new Exception\TranslationMissingException(ucfirst($message));
+            } else {
+                $entry = $message;
             }
-            
-            throw new Exception\TranslationMissingException($message);
         }
         
         return $entry;

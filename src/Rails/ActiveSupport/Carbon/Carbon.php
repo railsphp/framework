@@ -103,7 +103,7 @@ class Carbon extends Base implements \JsonSerializable
                 }
             }
         } else {
-            $locales = array_unique(array_merge([$tr->locale()], $tr->fallbacks()));
+            $locales = array_unique(array_merge([$tr->defaultLocale()], $tr->fallbacks()));
             
             $tenseData = $this->findTenseTranslation($tenseKey, $locales);
             if (!$tenseData) {

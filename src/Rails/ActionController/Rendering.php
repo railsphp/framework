@@ -185,7 +185,7 @@ class Rendering
     {
         $i18n = $this->controller->getService('i18n');
         $defaultLocales = $i18n->fallbacks();
-        array_unshift($defaultLocales, $i18n->locale());
+        array_unshift($defaultLocales, $i18n->defaultLocale());
         
         $format = $this->controller->request() ?
             $this->controller->request()->format() :
