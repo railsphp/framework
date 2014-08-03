@@ -37,11 +37,7 @@ class Processor
     public function isFileAdded($file)
     {
         foreach ($this->files as $addedFile) {
-            if (
-                $addedFile->rootPath() == $file->rootPath() &&
-                $addedFile->name() == $file->name() &&
-                $addedFile->type() == $file->type()
-            ) {
+            if ($addedFile->originalFilePath() == $file->originalFilePath()) {
                 return true;
             }
         }

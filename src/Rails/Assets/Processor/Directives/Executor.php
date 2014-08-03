@@ -91,6 +91,8 @@ class Executor
         
         $dir = new DirectoryIterator($dirPath);
         
+        $this->requireDirectory($dirPath);
+        
         foreach ($dir as $fileInfo) {
             if (!$fileInfo->isDot() && $fileInfo->isDir()) {
                 $this->requireDirectory($fileInfo->getRealPath());
