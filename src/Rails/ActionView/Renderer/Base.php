@@ -12,6 +12,7 @@ use Rails\ActionView\Renderer\TemplateRenderer;
 use Rails\ActionView\Template\Assigns;
 use Rails\ActionView\Template\Template;
 use Rails\ActionView\Helper\HelperSet;
+use Rails\I18n\Exception\TranslationMissingException;
 
 abstract class Base
 {
@@ -197,6 +198,37 @@ abstract class Base
         }
         
         return $contents;
+    }
+    
+    /**
+     * Note that this method doesn't support $key to be array.
+     *
+     * @var string $key
+     * @var array $options
+     * @var string $locale
+     */
+    public function t($key, array $options = [], $locale = null)
+    {
+        if (strpos($key, '.') === 0) {
+            $key = str_replace('/', '.', $this->template->prefix()) . $key;
+        }
+        
+        $i18n = $this->actionView->getService('i18n');
+        $options['exception'] = true;
+        
+        try {
+            $tr = $i18n->translate($key, $options, $locale);
+        } catch (TranslationMissingException $e) {
+            $parts = explode('.', $key);
+            $title = $this->actionView->getService('inflector')->titleize(end($parts));
+            $tr = sprintf(
+                '<span class="translation_missing" title="translation missing: %s">%s</span>',
+                $i18n->defaultLocale() . '.' . $key,
+                $title
+            );
+        }
+        
+        return $tr;
     }
     
     protected function definePartialObject($partialName, array &$options)
