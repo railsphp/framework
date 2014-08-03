@@ -32,7 +32,7 @@ trait TagTrait
      */
     public function properTagSize(&$attrs)
     {
-        if (is_int(strpos($attrs['size'], 'x'))) {
+        if (isset($attrs['size']) && is_int(strpos($attrs['size'], 'x'))) {
             list ($attrs['width'], $attrs['height']) = explode('x', $attrs['size']);
             unset($attrs['size']);
         }

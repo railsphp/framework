@@ -128,7 +128,7 @@ trait AssetTagTrait
     
     public function imageAlt($src)
     {
-        return $this->getService('inflector')->capitalize(
+        return $this->getService('inflector')->humanize(
             str_replace(['-', '_'], ' ', preg_replace('/-[a-f0-9]{32}\z/', '', pathinfo($src, PATHINFO_BASENAME)))
         );
     }

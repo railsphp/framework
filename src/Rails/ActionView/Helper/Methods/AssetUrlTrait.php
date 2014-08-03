@@ -51,7 +51,7 @@ trait AssetUrlTrait
     
     protected function properPath($path, array $options)
     {
-        $properPath = $this->computeAssetHost($options) . $this->request()->basePath() . $path;
+        $properPath = $this->computeAssetHost($options) . $this->routeSet->pathFor('base') . $path;
         if (!empty($options['body'])) {
             $properPath .= '?body=1';
         }
