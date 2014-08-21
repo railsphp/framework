@@ -327,19 +327,21 @@ abstract class Base
     
     protected function normalizePartialOptions(array &$options)
     {
-        if (!$options) {
+        // if (!$options) {
             // return [[], []];
-            $options['assigns'] = [];
-        } elseif (isset($options['locals'])) {
+            // $options['assigns'] = new Assigns();
+        // } else
+        if (isset($options['locals'])) {
             $options['assigns'] = $options['locals'];
             unset($options['locals']);
             // return [$options, $locals];
         } else {
             $optionsCopy = $options;
             $options = array_intersect_key($optionsCopy, self::$PARTIAL_OPTIONS);
-            $options['assigns'] = array_diff_key($optionsCopy, self::$PARTIAL_OPTIONS);
+            $options['assigns'] = new Assigns(array_diff_key($optionsCopy, self::$PARTIAL_OPTIONS));
             // return [$options, $locals];
         }
+        // vpe($options);
     }
     
     /** Capture { **/
@@ -350,7 +352,7 @@ abstract class Base
     
     public function contentFor($name)
     {
-        if ($this->contentForExists($name)) {
+        if ($this->contentExistsFor($name)) {
             return $this->captures[$name];
         }
         return '';
@@ -387,7 +389,7 @@ abstract class Base
         $this->setContentFor($name, $content);
     }
     
-    public function contentForExists($name)
+    public function contentExistsFor($name)
     {
         return array_key_exists($name, $this->captures);
     }

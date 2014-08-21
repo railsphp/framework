@@ -260,6 +260,14 @@ class Relation extends Relation\AbstractRelation
             $page = 1;
         }
         
+        if ($perPage === null) {
+            if (!$perPage = $this->select->getRawState('limit')) {
+                throw new Exception\InvalidArgumentException(
+                    "No per page passed and no limit is set"
+                );
+            }
+        }
+        
         $modelClass = $this->modelClass;
         $paginator  = new Paginator($this->select, $modelClass::adapter());
         $items      = $paginator->getItems(($page - 1) * $perPage, $perPage);

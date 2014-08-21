@@ -30,6 +30,11 @@ class CookieJar
      * end of the controller.
      */
     protected $jar = [];
+    
+    /**
+     * @var array
+     */
+    protected $source = [];
         
     /**
      * To know if cookies were set or not.
@@ -45,8 +50,9 @@ class CookieJar
         'raw'      => false
     ];
     
-    public function __construct(array $defaults = [])
+    public function __construct(array $source, array $defaults = [])
     {
+        $this->source = $source;
         if ($defaults) {
             $this->setDefaults($defaults);
         }
@@ -76,8 +82,8 @@ class CookieJar
     {
         if (isset($this->jar[$name])) {
             return $this->jar[$name]->value();
-        } elseif (isset($_COOKIE[$name])) {
-            return $_COOKIE[$name];
+        } elseif (isset($this->source[$name])) {
+            return $this->source[$name];
         } else {
             return null;
         }

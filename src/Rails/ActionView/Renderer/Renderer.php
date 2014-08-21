@@ -3,6 +3,7 @@ namespace Rails\ActionView\Renderer;
 
 use Rails\ActionView\ActionView;
 use Rails\ActionView\Template\Template;
+use Rails\ActionView\Template\Assigns;
 
 class Renderer
 {
@@ -40,7 +41,7 @@ class Renderer
         }
     }
     
-    public function renderTemplate(Template $template, $layout, $assigns, $helperSet, $captures)
+    public function renderTemplate(Template $template, $layout, Assigns $assigns, $helperSet, $captures)
     {
         $handler = $this->actionView->getHandler($template->handler());
         

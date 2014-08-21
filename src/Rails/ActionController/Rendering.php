@@ -114,7 +114,7 @@ class Rendering
             } else {
                 $message = sprintf(
                     "Can't serialize variable of type %s to format %s",
-                    $var,
+                    gettype($var),
                     $format
                 );
             }

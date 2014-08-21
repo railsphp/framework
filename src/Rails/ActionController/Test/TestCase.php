@@ -2,13 +2,16 @@
 namespace Rails\ActionController\Test;
 
 use Closure;
-use Rails\ActionDispatch\Http\Response;
+use ReflectionClass;
+// use Rails\ActionDispatch\Http\Response;
 use Rails\ActionDispatch\Http\Session;
 use Rails\ActionDispatch\Test\Http\Parameters as TestParameters;
 use Rails\ActionDispatch\Test\Http\Request as TestRequest;
+use Rails\ActionDispatch\Test\Http\Response as TestResponse;
 use Rails\ActionDispatch\Test\Constraint;
 use Rails\Test\TestCase as BaseTestCase;
 use Rails\Routing\ActionToken;
+use Rails\ActionDispatch\ActionDispatch;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -24,13 +27,19 @@ abstract class TestCase extends BaseTestCase
     
     protected $controller;
     
-    protected $params;
+    protected $parameters;
     
     protected $request;
     
     protected $session;
     
     protected $routeSet;
+    
+    /**
+     * Last used cookies
+     * @var \Rails\ActionDispatch\Http\Cookies\CookieJar
+     */
+    protected $cookieJar;
     
     public function __construct($name = null, array $data = [], $dataName = '')
     {
@@ -51,21 +60,47 @@ abstract class TestCase extends BaseTestCase
     public function runAction($method, $actionName, array $customParams = [], array $session = [])
     {
         $controllerClass = $this->resolveControllerClass();
-        $this->ensureRouteExists($controllerClass, $actionName, $customParams);
+        $path = $this->ensureRouteExists($controllerClass, $actionName, $customParams);
         
-        $response = new Response();
+        $response = new TestResponse();
+        $this->setCustomRequestParams($this->parameters, $method, $customParams);
         
-        $this->setCustomRequestParams($this->params, $method, $customParams);
+        $appClone = clone $this->application();
+        $appRefl  = new ReflectionClass(get_class($appClone));
         
-        $this->controller = new $controllerClass(
-            $this->request,
-            $response,
-            $this->params,
-            $this->session,
-            $this->routeSet
-        );
+        $response->setCookieJar($this->request->cookieJar());
         
-        $this->controller->runAction($actionName);
+        foreach(['request', 'parameters', 'session', 'response'] as $propName) {
+            $prop = $appRefl->getProperty($propName);
+            $prop->setAccessible(true);
+            $value = $propName == 'response' ? $response : $this->$propName;
+            $prop->setValue($appClone, $value);
+        }
+        
+        $this->cookies = $response->cookieJar();
+        // $this->request->resetCookieJar();
+        // vde($response->cookieJar()->sn);
+        // $path = 
+        
+        $dispatcher = new ActionDispatch($appClone);
+        $endPoint = $dispatcher->dispatch($method, $path);
+        
+        $this->controller = $endPoint->controller();
+        
+        // $this->controller = new $controllerClass(
+            // $this->request,
+            // $response,
+            // $this->parameters,
+            // $this->session,
+            // $this->routeSet
+        // );
+        
+        // $this->controller->runAction($actionName);
+    }
+    
+    public function cookies()
+    {
+        return $this->cookies;
     }
     
     public function assigns()
@@ -73,13 +108,17 @@ abstract class TestCase extends BaseTestCase
         return $this->controller->assigns();
     }
     
-    public static function assertResponse($response, $message = '')
+    public function assertResponse($response, $message = '')
     {
         $constraint = new Constraint\Response();
+        $constraint->setController($this->controller);
         self::assertThat($response, $constraint, $message);
     }
     
-    protected function ensureRouteExists($controllerClass, $actionName, array $params)
+    /**
+     * Verifies that the route exists and returns the path as string.
+     */
+    protected function ensureRouteExists($controllerClass, $actionName, array $parameters)
     {
         $nameParts = array_map(function($part) { return lcfirst($part); }, explode('\\', preg_replace('/Controller$/', '', $controllerClass)));
         
@@ -90,15 +129,15 @@ abstract class TestCase extends BaseTestCase
         ];
         $token = new ActionToken($tokenParams);
         
-        array_unshift($params, $token->toString());
+        array_unshift($parameters, $token->toString());
         
-        $url = $this->routeSet->urlFor($params);
+        $url = $this->routeSet->urlFor($parameters);
         
         if (!$url) {
-            array_shift($params);
-            $params = array_merge($tokenParams, $params);
+            array_shift($parameters);
+            $parameters = array_merge($tokenParams, $parameters);
             $pairs  = [];
-            foreach ($params as $key => $value) {
+            foreach ($parameters as $key => $value) {
                 $pairs[] = $key . '=>' . (is_scalar($value) ? '"' . $value . '"' : '(' . gettype($value) . ')');
             }
             throw new \Exception(sprintf(
@@ -106,12 +145,19 @@ abstract class TestCase extends BaseTestCase
                 implode(', ', $pairs)
             ));
         }
+        
+        $pos = strpos($url, '?');
+        if ($pos) {
+            $url = substr($url, 0, $pos);
+        }
+        
+        return $url;
     }
     
     protected function setUpRequest()
     {
-        $this->params   = new TestParameters();
-        $this->request  = new TestRequest($this->params);
+        $this->parameters   = new TestParameters();
+        $this->request  = new TestRequest($this->parameters);
         $this->session  = new Session();
         $this->routeSet = self::$application->routes();
     }
@@ -126,7 +172,7 @@ abstract class TestCase extends BaseTestCase
         return substr(get_called_class(), 0, -4);
     }
     
-    protected function setCustomRequestParams(TestParameters $params, $method, array $customParams)
+    protected function setCustomRequestParams(TestParameters $parameters, $method, array $customParams)
     {
         switch ($method) {
             case 'get':
@@ -135,11 +181,11 @@ abstract class TestCase extends BaseTestCase
             case 'put':
             case 'patch':
                 $setterName = 'set' . ucfirst($method) . 'Params';
-                $params->$setterName($customParams);
+                $parameters->$setterName($customParams);
                 break;
             
             default:
-                $params->setOtherVerbParams($customParams);
+                $parameters->setOtherVerbParams($customParams);
                 break;
         }
     }

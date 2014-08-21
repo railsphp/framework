@@ -22,6 +22,8 @@ class Request
     
     protected $files;
     
+    protected $cookieJar;
+    
     protected static $LOCALHOST = [
         '127.0.0.1',
         '::1'
@@ -283,6 +285,20 @@ class Request
             return $file;
         }
         return null;
+    }
+
+    public function cookieJar()
+    {
+        if (!$this->cookieJar) {
+            $this->cookieJar = new Cookies\CookieJar($_COOKIE);
+            $this->cookieJar->setDefaults(['path' => $this->basePath() ?: '/']);
+        }
+        return $this->cookieJar;
+    }
+    
+    public function setCookieJar(Cookies\CookieJar $cookieJar)
+    {
+        $this->cookieJar = $cookieJar;
     }
     
     /**

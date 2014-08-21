@@ -218,6 +218,22 @@ abstract class Base extends Persistence\PersistedModel\PersistedModel
         return false;
     }
     
+    /**
+     * Alias of directUpdates().
+     */
+    public function updateColumns(array $attrsValuesPairs)
+    {
+        return $this->directUpdates($attrsValuesPairs);
+    }
+    
+    /**
+     * Alias of directUpdate().
+     */
+    public function updateColumn($columnName, $value)
+    {
+        return $this->directUpdate($columnName, $value);
+    }
+    
     public function reload()
     {
         $this->loadedAssociations = [];

@@ -9,6 +9,8 @@ class Dispatcher
 {
     protected $token;
     
+    protected $controller;
+    
     public function __construct(ActionToken $token)
     {
         $this->token = $token;
@@ -18,9 +20,19 @@ class Dispatcher
     {
         $this->dispatch($application);
     }
+
+    public function controller()
+    {
+        return $this->controller;
+    }
     
     public function dispatch($application)
     {
+        $application->response()->setCookieJar($application->request()->cookieJar());
+        $application->session()->start(
+            // $application->config()['session']['name'],
+            // $application->config()['session']['id']
+        );
         $controllerClass = $application->routes()->requestRoute()->to()->toClass() . 'Controller';
         $controller      = new $controllerClass(
             $application->request(),
@@ -29,6 +41,8 @@ class Dispatcher
             $application->session(),
             $application->routes()
         );
+        
+        $this->controller = $controller;
         
         $controller->actionView()->lookupContext()->addPath(
             $application->config()['paths']['app']->expand('views')

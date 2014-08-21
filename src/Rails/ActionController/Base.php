@@ -6,13 +6,14 @@ use Rails\ActionDispatch\Http\Request;
 use Rails\ActionDispatch\Http\Response;
 use Rails\ActionDispatch\Http\Parameters;
 use Rails\ActionDispatch\Http\Session;
-use Rails\ActionDispatch\Cookies\CookieJar;
 use Rails\ActionView\ActionView;
 use Rails\ActionView\Helper\HelperSet;
 use Rails\ActionView\Template\Assigns;
 use Rails\ActionView\Renderer\Exception\TemplateMissingException;
 use Rails\ServiceManager\ServiceLocatorAwareTrait;
 use Rails\Routing\Route\RouteSet;
+use Rails\Routing\Route\RoutePathSearchTrait;
+use Rails\Routing\ActionToken;
 
 /**
  *
@@ -23,6 +24,7 @@ abstract class Base
     // use NamedPathAwareTrait;
     
     use ServiceLocatorAwareTrait;
+    use RoutePathSearchTrait;
     
     const APP_CONTROLLER_CLASS = 'ApplicationController';
     
@@ -180,7 +182,7 @@ abstract class Base
      */
     public function cookies()
     {
-        return $this->response->cookieJar();
+        return $this->request->cookieJar();
     }
     
     public function setLayout($layout)
@@ -547,12 +549,6 @@ abstract class Base
         return $this->redirectParams;
     }
     
-    public function urlFor($params)
-    {
-        $urlFor = new UrlFor($params);
-        return $urlFor->url();
-    }
-    
     public function runAction($actionName)
     {
         $this->actionName = $actionName;
@@ -651,11 +647,15 @@ abstract class Base
         }
         
         $location = $this->computeRedirectToLocation($location);
+        # TODO: if location is null, throw an exception: route not found.
         $this->response()->setLocation($location);
         
         if (isset($options['status'])) {
-            $this->response()->setStatus($location);
+            $status = $options['status'];
+        } else {
+            $status = 302;
         }
+        $this->response()->setStatus($status);
         
         $this->response()->setBody(
             '<html><body>You are being <a href="' .
@@ -738,8 +738,29 @@ abstract class Base
             (strlen($class) - strlen(self::APP_CONTROLLER_CLASS));
     }
     
+    # TODO: move this method to RoutePathSearchTrait
     protected function computeRedirectToLocation($params)
     {
+        if (is_string($params)) {
+            if ($params == 'root') {
+                if ($this->routeSet->requestRoute()) {
+                    $namespaces = implode('/', $this->routeSet->requestRoute()->to()->namespaces());
+                    if ($namespaces) {
+                        $params = $namespaces . '/root';
+                    }
+                }
+                return $this->routeSet->pathFor($params);
+            } elseif ($params == '/root') {
+                return $this->routeSet->pathFor('root');
+            } elseif (
+                strpos($params, '/')    === 0 ||
+                strpos($params, 'http') === 0
+            ) {
+                return $params;
+            } elseif (strpos($params, ActionToken::METHOD_SEPARATOR) === false) {
+                return $this->routeSet->pathFor($params);
+            }
+        }
         return $this->routeSet->urlFor($params);
     }
 }

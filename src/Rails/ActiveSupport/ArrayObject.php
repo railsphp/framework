@@ -37,10 +37,14 @@ class ArrayObject extends \ArrayObject
         return $this->exchangeArray($input);
     }
     
-    public function merge($other)
+    public function merge($other, $recursive = false)
     {
         $current = $this->getArrayCopy();
-        $current = array_merge($current, $other);
+        if ($recursive) {
+            $current = array_merge_recursive($current, $other);
+        } else {
+            $current = array_merge($current, $other);
+        }
         $this->exchangeArray($current);
         return $this;
     }

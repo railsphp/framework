@@ -127,7 +127,7 @@ class Assets
     
     public function compressContents($type, $contents)
     {
-        if ($this->config['compressors']->$type->none()) {
+        if (!isset($this->config['compressors'][$type])) {
             throw new Exception\RuntimeException(
                 sprintf(
                     "Unknown compressor for type '%s'",
@@ -136,7 +136,7 @@ class Assets
             );
         }
         
-        $method = new \Rails\Config\MethodConfig($this->config['compressors']->$type->toArray());
+        $method = new \Rails\Config\MethodConfig($this->config['compressors'][$type]);
         return $method->invoke($contents);
     }
     

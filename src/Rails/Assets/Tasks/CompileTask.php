@@ -52,7 +52,7 @@ class CompileTask extends Task
             $dir
         );
         
-        $manifest->compile($files, $config['digest'], $config['gz_compression'], $config['gz_compression_level']);
+        $manifest->compile($files, $config['assets']['digest'], $config['assets']['gz_compression'], $config['assets']['gz_compression_level']);
         $manifest->save();
     }
 }

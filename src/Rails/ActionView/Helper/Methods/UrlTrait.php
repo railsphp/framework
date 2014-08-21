@@ -2,9 +2,12 @@
 namespace Rails\ActionView\Helper\Methods;
 
 use Closure;
+use Rails\Routing\Route\RoutePathSearchTrait;
 
 trait UrlTrait
 {
+    use RoutePathSearchTrait;
+    
     /**
          $this->linkTo('Edit', ['#edit', 'id' => $post->id], ['class' => 'edit-btn']);
          #-> <a href="..." class="edit-btn">Edit</a>

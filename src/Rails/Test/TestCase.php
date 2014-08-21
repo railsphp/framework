@@ -27,6 +27,11 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         self::$factoryGirl = $factoryGirl;
     }
     
+    public static function application()
+    {
+        return self::$application;
+    }
+    
     public static function factoryGirl()
     {
         return self::$factoryGirl;

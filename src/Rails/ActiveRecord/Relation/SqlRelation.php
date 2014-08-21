@@ -1,7 +1,7 @@
 <?php
 namespace Rails\ActiveRecord\Relation;
 
-use Rails\ActiveRecord\Exception;
+use Rails\ActiveRecord\Persistence\Exception;
 use Zend\Db\Sql as ZfSql;
 
 class SqlRelation extends AbstractRelation

@@ -2,6 +2,7 @@
 namespace Rails\ActionDispatch\Test\Http;
 
 use Rails\ActionDispatch\Http\Request as Base;
+use Rails\ActionDispatch\Http\Cookies\CookieJar;
 
 class Request extends Base
 {
@@ -39,5 +40,19 @@ class Request extends Base
             }
         }
         return $this->format;
+    }
+    
+    public function cookieJar()
+    {
+        if (!$this->cookieJar) {
+            $this->cookieJar = new CookieJar([]);
+        }
+        return $this->cookieJar;
+    }
+    
+    public function resetCookieJar()
+    {
+        $this->cookieJar = new CookieJar([]);
+        return $this;
     }
 }

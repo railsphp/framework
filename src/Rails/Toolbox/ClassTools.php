@@ -48,6 +48,18 @@ class ClassTools
     {
         return generateFileIncluder($object);
     }
+    
+    /**
+     * Bind $closure to $target in a public scope.
+     *
+     * @param object $target
+     * @param \Closure $closure
+     * @return \Closure
+     */
+    public static function bindClosure($target, \Closure $closure)
+    {
+        return $closure->bindTo($target);
+    }
 }
 
 /**

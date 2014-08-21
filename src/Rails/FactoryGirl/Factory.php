@@ -45,6 +45,16 @@ class Factory
         return $instance;
     }
     
+    public function extend($name, array $options, array $attributes)
+    {
+        $clone = clone $this;
+        $clone->options = array_merge($clone->options, $options);
+        $clone->attributes = array_merge($clone->attributes, $attributes);
+        $this->processOptions();
+        $this->setLazyAttributes();
+        return $clone;
+    }
+    
     protected function attributeValues()
     {
         if ($this->lazyAttributes) {

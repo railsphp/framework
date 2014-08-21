@@ -52,8 +52,26 @@ trait CallbackUsableTrait
     
     protected function getAllCallbacks()
     {
-        # TODO:
+        # TODO: Get all callbacks from all methods ending in Callbacks
         $callbacks = $this->callbacks();
+        
+        $reflection = new \ReflectionClass($this);
+        $forbiddenDeclarers = [
+            'Rails\ActiveModel\Base',
+            'Rails\ActiveRecord\Base',
+            'Rails\ActiveRecord\Persistence\PersistedModel',
+        ];
+        
+        foreach ($reflection->getMethods() as $method) {
+            $methodName = $method->getName();
+            if (
+                strpos($methodName, 'Callbacks') === strlen($methodName) - 9 &&
+                !in_array($method->getDeclaringClass()->getName(), $forbiddenDeclarers)
+            ) {
+                $callbacks = array_merge_recursive($callbacks, $this->$methodName());
+            }
+        }
+        
         return $callbacks;
     }
 }

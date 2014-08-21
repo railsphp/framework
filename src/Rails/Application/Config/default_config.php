@@ -102,7 +102,8 @@ $config['assets'] = [
         'css'    => 'Rails\Assets\Compiler\CssCompiler',
         'scss'   => 'Rails\Assets\Compiler\ScssCompiler',
         'js'     => 'Rails\Assets\Compiler\JsCompiler',
-        'coffee' => 'Rails\Assets\Compiler\CoffeeCompiler'
+        'coffee' => 'Rails\Assets\Compiler\CoffeeCompiler',
+        'php'    => 'Rails\Assets\Compiler\PhpCompiler'
     ],
 
     /**

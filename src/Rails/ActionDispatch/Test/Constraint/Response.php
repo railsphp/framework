@@ -6,6 +6,8 @@ use Rails\ActionDispatch\Http\StatusCodes;
 
 class Response extends \PHPUnit_Framework_Constraint
 {
+    protected $controller;
+    
     protected static $RANGED_STATUS_TYPES = [
         'success',
         'redirect',

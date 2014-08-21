@@ -10,7 +10,7 @@ use Rails\ActionDispatch\Http\Session as Session;
 use Rails\ActionDispatch\Http\Parameters as HttpParameters;
 use Rails\ActionDispatch\Http\Response as HttpResponse;
 use Rails\ActionDispatch\ErrorReporting\Reporter as ErrorReporter;
-use Rails\Routing\ActionToken;
+use Rails\ActionDispatch\ActionDispatch;
 
 abstract class Base
 {
@@ -74,6 +74,8 @@ abstract class Base
         
         set_exception_handler([$this, 'exceptionHandler']);
         require_once __DIR__ . '/../Toolbox/functions.php';
+        
+        $this->init();
     }
     
     public function config()
@@ -100,55 +102,58 @@ abstract class Base
             }
         }
         
-        $this->getService('log')->setRequest($this->request());
+        $dispatcher = new ActionDispatch($this);
+        $dispatcher->dispatch($this->request()->method(), $this->request()->path());
+        // $this->response()->commit();
         
-        $routeParams = $this->routes()->match(
-            $this->request()->path(),
-            $this->request()->method()
-        );
+        // $this->getService('log')->setRequest($this->request());
         
-        if (!$routeParams) {
-            # Route not found.
-            throw new \Rails\Routing\Exception\NotFoundException(
-                sprintf(
-                    'No route matches [%s] "%s"',
-                    $this->request()->method(),
-                    $this->request()->path()
-                )
-            );
-        }
+        // $routeParams = $this->routes()->match(
+            // $this->request()->path(),
+            // $this->request()->method()
+        // );
         
-        list ($route, $routeVars) = $routeParams;
+        // if (!$routeParams) {
+            // # Route not found.
+            // throw new \Rails\Routing\Exception\NotFoundException(
+                // sprintf(
+                    // 'No route matches [%s] "%s"',
+                    // $this->request()->method(),
+                    // $this->request()->path()
+                // )
+            // );
+        // }
+        
+        // list ($route, $routeVars) = $routeParams;
 
-        if ($route->controller() == ':controller') {
-            $route->setProperController(
-                lcfirst($this->getService('inflector')
-                    ->camelize($routeVars['controller'])->toString())
-            );
-        }
-        if ($route->action() == ':action') {
-            $route->setProperAction(
-                lcfirst($this->getService('inflector')
-                    ->camelize($routeVars['action'])->toString())
-            );
-        }
+        // if ($route->controller() == ':controller') {
+            // $route->setProperController(
+                // lcfirst($this->getService('inflector')
+                    // ->camelize($routeVars['controller'])->toString())
+            // );
+        // }
+        // if ($route->action() == ':action') {
+            // $route->setProperAction(
+                // lcfirst($this->getService('inflector')
+                    // ->camelize($routeVars['action'])->toString())
+            // );
+        // }
         
-        $this->parameters()->setRouteVars($routeVars);
+        // $this->parameters()->setRouteVars($routeVars);
         
-        ActionToken::setRoute($route);
+        // ActionToken::setRoute($route);
         
-        $this->routes()->setRequestRoute($route);
-        $this->request()->setRequestRoute($route);
-        // $this->request()->setParameters($this->parameters());
+        // $this->routes()->setRequestRoute($route);
+        // $this->request()->setRequestRoute($route);
         
-        $endPoint = $route->endPoint();
+        // $endPoint = $route->endPoint();
         
-        call_user_func(
-            $endPoint,
-            $this
-        );
+        // call_user_func(
+            // $endPoint,
+            // $this
+        // );
         
-        $this->response()->commit();
+        // $this->response()->commit();
     }
     
     public function exceptionHandler($e)
@@ -206,6 +211,10 @@ abstract class Base
     }
     
     protected function initConfig($config)
+    {
+    }
+    
+    protected function init()
     {
     }
     

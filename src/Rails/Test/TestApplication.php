@@ -88,10 +88,10 @@ class TestApplication
             ActiveRecordBase::clearModelSchemas();
             SchemaMigration::setAdapter($adapter);
             
-            $fixturesFile = $application->config()['paths']['root']->expand('test', 'fixtures', 'fixtures.php');
+            // $fixturesFile = $application->config()['paths']['root']->expand('test', 'fixtures', 'fixtures.php');
             
-            # TODO: require outside of scope.
-            require $fixturesFile;
+            // # TODO: require outside of scope.
+            // require $fixturesFile;
         }
     }
 }

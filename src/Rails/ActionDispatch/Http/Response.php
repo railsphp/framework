@@ -64,12 +64,9 @@ class Response
         return $this;
     }
     
-    public function cookieJar()
+    public function setCookieJar(Cookies\CookieJar $cookieJar)
     {
-        if (!$this->cookieJar) {
-            $this->cookieJar = new Cookies\CookieJar();
-        }
-        return $this->cookieJar;
+        $this->cookieJar = $cookieJar;
     }
     
     public function addHeader($name, $value)
@@ -165,7 +162,7 @@ class Response
     
     protected function clearBuffers()
     {
-        if ($status = ob_get_status()) {
+        if (($status = ob_get_status()) && $status['level']) {
             foreach (range(0, $status['level']) as $i) {
                 ob_end_clean();
             }

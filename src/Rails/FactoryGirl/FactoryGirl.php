@@ -75,7 +75,10 @@ class FactoryGirl
         }
     }
     
-    public function extendFactory($baseName, $name, array $options = [], array $attributes = [])
+    /**
+     * Note that both $options and $attributes must be passed.
+     */
+    public function extendFactory($baseName, $name, array $options, array $attributes)
     {
         $base = $this->factories->get($baseName);
         
@@ -86,13 +89,9 @@ class FactoryGirl
             ));
         }
         
-        if (!$attributes) {
-            $attributes = $options;
-            $options    = [];
-        }
-        
-        $attributes = array_merge($base->attributes(), $attributes);
-        $this->setFactory($name, $options, $attributes);
+        $factory = $this->factories->get($baseName);
+        $clone   = $factory->extend($name, $options, $attributes);
+        $this->factories->set($name, $clone);
     }
     
     public function setSequence($name, $value)

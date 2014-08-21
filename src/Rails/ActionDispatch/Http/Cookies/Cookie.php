@@ -1,6 +1,7 @@
 <?php
 namespace Rails\ActionDispatch\Http\Cookies;
 
+use DateTime;
 use Rails\ActionDispatch\Exception;
 
 class Cookie
@@ -92,7 +93,7 @@ class Cookie
         $pairs[] = $this->name . '=' . ($this->raw ? $this->value : urlencode($this->value));
         
         if ($this->expire) {
-            $pairs[] = 'Expires=' . date("l, d-M-y H:i:s T", $this->expire);
+            $pairs[] = 'Expires=' . date(DateTime::COOKIE, $this->expire);
         }
         if ($this->domain) {
             $pairs[] = 'Domain=' . $this->domain;
