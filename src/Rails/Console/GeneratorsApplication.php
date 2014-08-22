@@ -1,9 +1,14 @@
 <?php
 namespace Rails\Console;
 
-// use Symfony\Component\Console\Application as ConsoleApp;
-use Rails\Console\Application as ConsoleApp;
 use Symfony\Component\Console\Input\ArgvInput;
+use Rails\ActionMailer\Generators\Mailer\MailerGenerator;
+use Rails\ActiveRecord\Generators\Model\ModelGenerator;
+use Rails\ActiveRecord\Generators\Migration\MigrationGenerator;
+use Rails\ActionController\Generators\Controller\ControllerGenerator;
+use Rails\ActionView\Generators\Helper\HelperGenerator;
+use Rails\Test\Generators\Test\TestGenerator;
+use Rails\Test\Generators\Factory\FactoryGenerator;
 
 class GeneratorsApplication
 {
@@ -15,7 +20,7 @@ class GeneratorsApplication
     {
         $this->app = $app;
         
-        $this->consoleApp = new ConsoleApp();
+        $this->consoleApp = new Application();
         $this->consoleApp->setCatchExceptions(false);
         
         if ($app) {
@@ -23,9 +28,15 @@ class GeneratorsApplication
         }
         
         # add tasks
-        $this->consoleApp->addTask(new \Rails\ActiveRecord\Generators\Model\ModelGenerator());
-        $this->consoleApp->addTask(new \Rails\ActiveRecord\Generators\Migration\MigrationGenerator());
-        $this->consoleApp->addTask(new \Rails\ActionController\Generators\Controller\ControllerGenerator());
+        $this->consoleApp->addTasks([
+            new MailerGenerator(),
+            new ModelGenerator(),
+            new MigrationGenerator(),
+            new ControllerGenerator(),
+            new HelperGenerator(),
+            new TestGenerator(),
+            new FactoryGenerator()
+        ]);
     }
     
     public function run()

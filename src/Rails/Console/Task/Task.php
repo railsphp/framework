@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\ArgvInput;
 use Rails\Console\Exception;
 
 abstract class Task extends Command
@@ -54,6 +55,68 @@ abstract class Task extends Command
     public function opt($name)
     {
         return $this->input->getOption($name);
+    }
+    
+    /**
+     * Creates a file with console otput.
+     *
+     * @param string $filePath  Full path to file
+     * @param string $contents  The contents of the file
+     */
+    protected function createFile($filePath, $contents)
+    {
+        $this->createDirectory(dirname($filePath));
+        
+        if (is_file($filePath)) {
+            // if (!$this->opt('force')) {
+            $this->output->setDecorated(true);
+            $this->output->writeln(sprintf(
+                "<comment>file exists  <cyan>%s</cyan></comment>",
+                $this->prettyPath($filePath)
+            ));
+                // return;
+            // } else {
+                // $this->output->writeln(sprintf(
+                    // "<comment>overwriten  <cyan>%s</cyan></comment>",
+                    // $filePath
+                // ));
+            // }
+        } else {
+            $this->output->writeln(sprintf(
+                "<info>create  <cyan>%s</cyan></info>",
+                $this->prettyPath($filePath)
+            ));
+            file_put_contents($filePath, $contents);
+        }
+        
+    }
+    
+    /**
+     * Creates a directory with console otput.
+     *
+     * @param string $dirPath   Full directory path
+     */
+    protected function createDirectory($dirPath)
+    {
+        // $fullPath = $this->app->config()['paths']['root']->expand($dirPath);
+        
+        if (!is_dir($dirPath)) {
+            $this->output->writeln(sprintf(
+                "<info>create  <cyan>%s</cyan></info>",
+                $this->prettyPath($dirPath)
+            ));
+            mkdir($dirPath, 0775, true);
+        }
+    }
+    
+    protected function invokeTask($generatorName, array $argvParams)
+    {
+        array_unshift($argvParams, '', '');
+        $input  = new ArgvInput($argvParams);
+        $output = $this->output;
+        
+        $task = $this->getApplication()->get($generatorName);
+        $task->run($input, $output);
     }
     
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -144,5 +207,10 @@ abstract class Task extends Command
         }
         
         return $normalizedMode;
+    }
+    
+    protected function prettyPath($path)
+    {
+        return substr($path, strlen($this->app->config()['paths']['root']) + 1);
     }
 }

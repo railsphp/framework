@@ -11,15 +11,12 @@ abstract class Generator extends Task
     
     abstract protected function filePath();
     
-    protected function createFile()
+    protected function createGenerator()
     {
         ob_start();
         require $this->template();
         $contents = ob_get_clean();
-        
-        $this->createPath();
-        
-        file_put_contents($this->fullFilePath(), $contents);
+        $this->createFile($this->fullFilePath(), $contents);
     }
 
     protected function phpOpenTag()
@@ -27,22 +24,13 @@ abstract class Generator extends Task
         return "<?php\n";
     }
     
-    protected function createPath()
-    {
-        $fullPath = dirname($this->fullFilePath());
-        
-        if (!is_dir($fullPath)) {
-            mkdir($fullPath, 0755, true);
-        }
-    }
-    
     protected function fullFilePath()
     {
-        return \Rails::root() . '/' . $this->filePath();
+        return $this->app->config()['paths']['root']->expand($this->filePath());
     }
 
     protected function task()
-    {
+    {        
         $generatorClass = get_called_class();
         $reflection = new ReflectionClass($generatorClass);
         

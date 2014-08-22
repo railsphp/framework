@@ -5,7 +5,7 @@ use Rails\ActiveRecord\Base as SqlBase;
 use Rails\Console\Task\Task;
 use Rails\ActiveRecord\Schema\Migration\Importer;
 
-class Create extends Task
+class CreateDatabaseTask extends Task
 {
     protected function configure()
     {

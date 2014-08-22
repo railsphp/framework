@@ -5,7 +5,7 @@ use Rails\ActiveRecord\Base as SqlBase;
 use Rails\Console\Task\Task;
 use Rails\ActiveRecord\Migration\Migrator;
 
-class Seed extends Task
+class SeedTask extends Task
 {
     protected function configure()
     {

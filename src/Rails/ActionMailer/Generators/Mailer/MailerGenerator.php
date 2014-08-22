@@ -1,9 +1,9 @@
 <?php
-namespace Rails\ActionController\Generators\Controller;
+namespace Rails\ActionMailer\Generators\Mailer;
 
 use Rails\Generator\Generator;
 
-class ControllerGenerator extends Generator
+class MailerGenerator extends Generator
 {
     protected $classNamespace;
     
@@ -18,6 +18,7 @@ class ControllerGenerator extends Generator
         } else {
             $this->className = $name;
         }
+        $this->className .= 'Mailer';
     }
     
     public function writeFile()
@@ -25,37 +26,16 @@ class ControllerGenerator extends Generator
         $this->createGenerator();
     }
     
-    public function createViewDirectory()
-    {
-        $folderName = $this->app->getService('inflector')->underscore($this->className);
-        $subDir = strtolower($this->classNamespace);
-        
-        $directory = $this->app->config()['paths']['root']->expand('app', 'views', $subDir, $folderName);
-        $this->createDirectory($directory);
-    }
-    
-    public function createHelper()
-    {
-        $params = [$this->arg('name')];
-        $this->invokeTask('helper', $params);
-    }
-    
-    public function createTestFile()
-    {
-        $params = ['controller', $this->arg('name')];
-        $this->invokeTask('test:test', $params);
-    }
-    
     protected function defineNamespace()
     {
         if ($this->classNamespace) {
-            return 'namespace ' . str_replace('/', '\\', $this->classNamespace) . ";\n\n";
+            return 'namespace ' . $this->classNamespace . ";\n\n";
         }
     }
     
     protected function baseClass()
     {
-        $baseClass = 'ApplicationController';
+        $baseClass = 'Rails\ActionMailer\Base';
         if ($this->classNamespace) {
             $baseClass = '\\' . $baseClass;
         }
@@ -69,23 +49,24 @@ class ControllerGenerator extends Generator
         } else {
             $namespaces = '';
         }
-        return 'app/controllers/' . $namespaces . $this->className . 'Controller.php';
+        
+        return 'app/mailers/' . $namespaces . $this->className . '.php';
     }
     
     protected function template()
     {
-        return __DIR__ . '/templates/controller.php';
+        return __DIR__ . '/templates/mailer.php';
     }
     
     protected function configure()
     {
         $this
-            ->setName('controller')
-            ->setDescription('Generate controller')
+            ->setName('mailer')
+            ->setDescription('Generate a mailer.')
             ->addArgument(
                 'name',
                 'required',
-                'Name of the controller (e.g. Users, namespaced: Admin/Posts).'
+                'Name of the mailer (e.g. NewPassword, namespaced: Admin/User).'
             );
     }
 }

@@ -23,17 +23,23 @@ class ModelGenerator extends Generator
     
     public function writeFile()
     {
-        $this->createFile();
+        $this->createGenerator();
     }
     
     public function createMigration()
     {
         if ($this->opt('migration') === null) {
-            $name  = $this->app->getService('inflector')->pluralize($this->arg('name'))->underscore();
-            $argv  = ['', 'create_' . $name];
-            $input = new ArgvInput($argv);
-            (new MigrationGenerator())->run($input, $this->output);
+            $name = $this->app->getService('inflector')->pluralize($this->arg('name'))->underscore();
+            $name = str_replace('/', '_', $name);
+            $params = ['create_' . $name];
+            $this->invokeTask('migration', $params);
         }
+    }
+    
+    public function createTestFile()
+    {
+        $params = ['model', $this->arg('name')];
+        $this->invokeTask('test:test', $params);
     }
     
     protected function defineNamespace()

@@ -2,11 +2,23 @@
 namespace Rails\Console;
 
 use Rails\Generator\Tasks\GenerateTask;
+use Rails\Assets\Tasks\CompileTask;
+use Rails\ActiveRecord\Tasks\MigrateTask;
+use Rails\ActiveRecord\Tasks\CreateDatabaseTask;
+use Rails\ActiveRecord\Tasks\SeedTask;
+use Rails\ActiveRecord\Tasks\Schema\DumpTask;
+use Rails\Test\Tasks\TestTask;
 
 class TaskApplication
 {
+    /**
+     * @var \Rails\Application\Base
+     */
     protected $app;
     
+    /**
+     * @var Application
+     */
     protected $consoleApp;
 
     public function __construct($app)
@@ -17,14 +29,16 @@ class TaskApplication
         $this->consoleApp->setApp($app);
         $this->consoleApp->setCatchExceptions(false);
         
-        $this->consoleApp->addTask(new GenerateTask());
-        $this->consoleApp->addTask(new Boris\InitializeTask());
-        $this->consoleApp->addTask(new \Rails\Assets\Tasks\CompileTask());
-        $this->consoleApp->addTask(new \Rails\ActiveRecord\Tasks\Migrate());
-        $this->consoleApp->addTask(new \Rails\ActiveRecord\Tasks\Create());
-        $this->consoleApp->addTask(new \Rails\ActiveRecord\Tasks\Seed());
-        $this->consoleApp->addTask(new \Rails\ActiveRecord\Tasks\Schema\Dump());
-        $this->consoleApp->addTask(new \Rails\Test\Tasks\TestTask());
+        $this->consoleApp->addTasks([
+            new GenerateTask(),
+            new Boris\InitializeTask(),
+            new CompileTask(),
+            new MigrateTask(),
+            new CreateDatabaseTask(),
+            new SeedTask(),
+            new DumpTask(),
+            new TestTask()
+        ]);
     }
     
     public function run()

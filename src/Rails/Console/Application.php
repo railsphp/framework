@@ -7,6 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Rails\Application\Base as RailsApp;
 use Rails\Console\Task\Task;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 class Application extends Base
 {
@@ -23,6 +24,7 @@ class Application extends Base
         if ($this->app) {
             $task->setApp($this->app);
         }
+        $task->setApplication($this);
         return $this;
     }
     
@@ -38,31 +40,7 @@ class Application extends Base
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        if (true === $input->hasParameterOption(array('--version', '-V'))) {
-            $output->writeln($this->getLongVersion());
-
-            return 0;
-        }
-
-        $name = $this->getCommandName($input);
-        if (true === $input->hasParameterOption(array('--help', '-h'))) {
-            if (!$name) {
-                $name = 'help';
-                $input = new ArrayInput(array('command' => 'help'));
-            }
-        }
-
-        if (!$name) {
-            $name = 'list';
-            $input = new ArrayInput(array('command' => 'list'));
-        }
-
-        $command = $this->find($name);
-
-        $this->runningCommand = $command;
-        $exitCode = $this->doRunCommand($command, $input, $output);
-        $this->runningCommand = null;
-
-        return $exitCode;
+        $output->getFormatter()->setStyle('cyan', new OutputFormatterStyle('cyan'));
+        parent::doRun($input, $output);
     }
 }
