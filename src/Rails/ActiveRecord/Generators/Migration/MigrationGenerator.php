@@ -37,7 +37,7 @@ class MigrationGenerator extends Generator
     
     public function writeFile()
     {
-        $this->createFile();
+        $this->createGenerator();
     }
     
     protected function filePath()
