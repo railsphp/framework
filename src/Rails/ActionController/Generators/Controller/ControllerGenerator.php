@@ -29,8 +29,10 @@ class ControllerGenerator extends Generator
     {
         $folderName = $this->app->getService('inflector')->underscore($this->className);
         $subDir = strtolower($this->classNamespace);
-        
-        $directory = $this->app->config()['paths']['root']->expand('app', 'views', $subDir, $folderName);
+        if ($subDir) {
+            $folderName = $subDir . '/' . $folderName;
+        }
+        $directory = $this->app->config()['paths']['root']->expand('app', 'views', $folderName);
         $this->createDirectory($directory);
     }
     

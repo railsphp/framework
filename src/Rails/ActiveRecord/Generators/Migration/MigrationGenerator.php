@@ -13,7 +13,7 @@ class MigrationGenerator extends Generator
     
     public function setProperties()
     {
-        $this->migrationTemplate = 'migrations.php';
+        $this->migrationTemplate = 'migration.php';
         $fileName = $this->arg('name');
         $inflector = \Rails::getService('inflector');
         
