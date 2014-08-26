@@ -1,6 +1,8 @@
 <?php
 namespace Rails\ActionDispatch\Http;
 
+use Rails\ActionDispatch\Exception\ParameterMissingException;
+
 class Parameters implements \IteratorAggregate
 {
     protected $deleteParams    = [];
@@ -179,6 +181,64 @@ class Parameters implements \IteratorAggregate
     public function jsonPayloadError()
     {
         return $this->jsonPayloadError;
+    }
+    
+    /**
+     * Checks for required parameters. If one of them is null,
+     * ParameterMissingException is thrown.
+     *
+     * ```
+     * // Check for a value.
+     * $parameters->required('user');
+     *
+     * // Check for an array and some keys
+     * $parameters->required(['user' => ['name', 'address']]);
+     * ```
+     *
+     * @throws ParameterMissingException
+     */
+    public function required($keys, array $params = [], array $parents = [])
+    {
+        if (!$params) {
+            $params = $this->all();
+        }
+        
+        if (is_array($keys)) {
+            foreach ($keys as $key => $value) {
+                if (is_int($key)) {
+                    $key = $value;
+                }
+                
+                if (!isset($params[$key])) {
+                    if ($parents) {
+                        $str = '';
+                        foreach ($parents as $parent) {
+                            $str .= '[ ' . $parent . ' => ';
+                        }
+                        $str .= $key . str_repeat(' ]', count($parents));
+                    } else {
+                        $str = $Key;
+                    }
+                    throw new ParameterMissingException(sprintf(
+                        "Missing parameter %s",
+                        $str
+                    ));
+                }
+                
+                if (is_array($value)) {
+                    $params = $params[$key];
+                    $parents[] = $key;
+                    $this->required($value, $params, $parents);
+                }
+            }
+        } else {
+            if (!isset($params[$keys])) {
+                throw new ParameterMissingException(sprintf(
+                    "Missing parameter %s",
+                    $keys
+                ));
+            }
+        }
     }
     
     protected function searchParam($index)

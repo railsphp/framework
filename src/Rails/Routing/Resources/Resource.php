@@ -23,9 +23,15 @@ class Resource
     
     public function __construct($entities, $options = [])
     {
+        if (isset($options['controller'])) {
+            $controller = $options['controller'];
+        } else {
+            $controller = self::services()->get('inflector')->camelize($entities, false)->toString();
+        }
+        
         $this->name       = $entities;
         $this->path       = isset($options['path']) ? $options['path'] : $this->name;
-        $this->controller = isset($options['controller']) ? $options['controller'] : $this->name;
+        $this->controller = $controller;
         $this->as         = isset($options['as']) ? $options['as'] : null;
         $this->param      = isset($options['param']) ? $options['param'] : 'id';
         $this->options    = $options;

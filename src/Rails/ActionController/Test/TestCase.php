@@ -4,10 +4,11 @@ namespace Rails\ActionController\Test;
 use Closure;
 use ReflectionClass;
 // use Rails\ActionDispatch\Http\Response;
-use Rails\ActionDispatch\Http\Session;
+// use Rails\ActionDispatch\Http\Session;
 use Rails\ActionDispatch\Test\Http\Parameters as TestParameters;
 use Rails\ActionDispatch\Test\Http\Request as TestRequest;
 use Rails\ActionDispatch\Test\Http\Response as TestResponse;
+use Rails\ActionDispatch\Test\Http\Session as TestSession;
 use Rails\ActionDispatch\Test\Constraint;
 use Rails\Test\TestCase as BaseTestCase;
 use Rails\Routing\ActionToken;
@@ -78,24 +79,11 @@ abstract class TestCase extends BaseTestCase
         }
         
         $this->cookies = $response->cookieJar();
-        // $this->request->resetCookieJar();
-        // vde($response->cookieJar()->sn);
-        // $path = 
         
         $dispatcher = new ActionDispatch($appClone);
         $endPoint = $dispatcher->dispatch($method, $path);
         
         $this->controller = $endPoint->controller();
-        
-        // $this->controller = new $controllerClass(
-            // $this->request,
-            // $response,
-            // $this->parameters,
-            // $this->session,
-            // $this->routeSet
-        // );
-        
-        // $this->controller->runAction($actionName);
     }
     
     public function cookies()
@@ -158,7 +146,7 @@ abstract class TestCase extends BaseTestCase
     {
         $this->parameters   = new TestParameters();
         $this->request  = new TestRequest($this->parameters);
-        $this->session  = new Session();
+        $this->session  = new TestSession();
         $this->routeSet = self::$application->routes();
     }
     

@@ -55,8 +55,10 @@ class Loader
         
         $foreignKey = !empty($options['foreignKey']) ? $options['foreignKey'] : Rails::services()->get('inflector')->underscore($name) . '_id';
         
+        $query = $this->buildQuery($options);
+        
         if ($fKey = $record->getAttribute($foreignKey)) {
-            return $options['className']::where(['id' => $fKey])->first() ?: false;
+            return $query->where(['id' => $fKey])->first() ?: false;
         }
         
         return false;
@@ -98,11 +100,10 @@ class Loader
         }
         
         # options[0], if present, it's an anonymous function to customize the relation.
-        # The function is binded to the relation object.
+        # The relation object is passed to that function.
         if (isset($options[0])) {
             $lambda = array_shift($options);
-            $lambda = $lambda->bindTo($query);
-            $lambda();
+            $lambda($query);
         }
         
         return $query;
