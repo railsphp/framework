@@ -107,8 +107,25 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
         return $rel;
     }
     
+    /**
+     * Pass an array as $on so it will be converted to Expression:
+     *
+     * ```
+     * $rel->join('users', ['users.id = ?', [1]]);
+     * ```
+     *
+     * This is due to ZF escaping the "1" when doing something like `$rel->join('users', 'users.id = 1');`,
+     * resulting in "... JOIN `users` ON `users`.`id` = `1`", ending in "Unknown column 1" error.
+     *
+     */
     public function join($tableName, $on, $columns = false, $type = Select::JOIN_INNER)
     {
+        if (is_array($on)) {
+            $expression = isset($on[0]) ? $on[0] : '';
+            $parameters = isset($on[1]) ? $on[1] : null;
+            $types      = isset($on[2]) ? $on[2] : [];
+            $on         = new Expression($expression, $parameters, $types);
+        }
         $rel = $this->currentOrClone();
         $rel->select->join($tableName, $on, $columns, $type);
         return $rel;
