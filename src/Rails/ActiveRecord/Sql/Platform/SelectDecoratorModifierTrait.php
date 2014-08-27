@@ -1,19 +1,19 @@
 <?php
-namespace Rails\ActiveRecord\Relation;
+namespace Rails\ActiveRecord\Sql\Platform;
 
 use Zend\Db\Adapter\Platform\PlatformInterface;
 use Zend\Db\Adapter\Driver\DriverInterface;
 use Zend\Db\Adapter\ParameterContainer;
 use Zend\Db\Sql\TableIdentifier;
 use Zend\Db\Sql\ExpressionInterface;
-use Zend\Db\Sql\Select as BaseSelect;
 
 /**
- * Extended ZF's Select to hack the processSelect() method, because
- * it forcedly adds any joined table to the $columns array. This class
- * respects the $columns array in that way.
+ * Modifies ZF's SelectDecorator to hack the processSelect() method, because
+ * it forcedly adds any joined table to the $columns array, even if the value
+ * is empty or invalid. This trait will allow passing an empty value as join columns,
+ * which will cause the columns to not to be added.
  */
-class Select extends BaseSelect
+trait SelectDecoratorModifierTrait
 {
     protected function processSelect(PlatformInterface $platform, DriverInterface $driver = null, ParameterContainer $parameterContainer = null)
     {
@@ -33,7 +33,7 @@ class Select extends BaseSelect
                 list($table, $schema) = $table->getTableAndSchema();
             }
 
-            if ($table instanceof BaseSelect) {
+            if ($table instanceof Select) {
                 $table = '(' . $this->processSubselect($table, $platform, $driver, $parameterContainer) . ')';
             } else {
                 $table = $platform->quoteIdentifier($table);
@@ -94,6 +94,43 @@ class Select extends BaseSelect
         }
 
         $separator = $platform->getIdentifierSeparator();
+
+        // process join columns
+        foreach ($this->joins as $join) {
+            foreach ($join['columns'] as $jKey => $jColumn) {
+                if (!$jColumn) {
+                    continue;
+                }
+                
+                $jColumns = array();
+                if ($jColumn instanceof ExpressionInterface) {
+                    $jColumnParts = $this->processExpression(
+                        $jColumn,
+                        $platform,
+                        $driver,
+                        $this->processInfo['paramPrefix'] . ((is_string($jKey)) ? $jKey : 'column')
+                    );
+                    if ($parameterContainer) {
+                        $parameterContainer->merge($jColumnParts->getParameterContainer());
+                    }
+                    $jColumns[] = $jColumnParts->getSql();
+                } else {
+                    $name = (is_array($join['name'])) ? key($join['name']) : $name = $join['name'];
+                    if ($name instanceof TableIdentifier) {
+                        $name = ($name->hasSchema() ? $platform->quoteIdentifier($name->getSchema()) . $separator : '') . $platform->quoteIdentifier($name->getTable());
+                    } else {
+                        $name = $platform->quoteIdentifier($name);
+                    }
+                    $jColumns[] = $name . $separator . $platform->quoteIdentifierInFragment($jColumn);
+                }
+                if (is_string($jKey)) {
+                    $jColumns[] = $platform->quoteIdentifier($jKey);
+                } elseif ($jColumn !== self::SQL_STAR) {
+                    $jColumns[] = $platform->quoteIdentifier($jColumn);
+                }
+                $columns[] = $jColumns;
+            }
+        }
 
         if ($this->quantifier) {
             if ($this->quantifier instanceof ExpressionInterface) {

@@ -2,6 +2,7 @@
 namespace Rails\ActiveRecord\Adapter\Driver;
 
 use Zend\Db\Sql\Sql;
+use Rails\ActiveRecord\Sql\Platform\Platform;
 
 /**
  * Add a little more methods to retrieve data to the Connections.
@@ -120,7 +121,7 @@ trait ConnectionModifierTrait
     public function getSql()
     {
         if (!$this->sql) {
-            $this->sql = new Sql($this->adapter);
+            $this->sql = new Sql($this->adapter, null, new Platform($this->adapter));
         }
         return $this->sql;
     }

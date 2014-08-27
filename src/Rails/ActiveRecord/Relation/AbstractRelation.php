@@ -107,7 +107,7 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
         return $rel;
     }
     
-    public function join($tableName, $on, $columns = Select::SQL_STAR, $type = Select::JOIN_INNER)
+    public function join($tableName, $on, $columns = false, $type = Select::JOIN_INNER)
     {
         $rel = $this->currentOrClone();
         $rel->select->join($tableName, $on, $columns, $type);

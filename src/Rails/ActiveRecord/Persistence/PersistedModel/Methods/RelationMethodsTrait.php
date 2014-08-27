@@ -20,6 +20,11 @@ trait RelationMethodsTrait
         return self::getRelation();
     }
     
+    public static function select()
+    {
+        return call_user_func_array([self::getRelation(), 'select'], func_get_args());
+    }
+    
     public static function where()
     {
         return call_user_func_array([self::getRelation(), 'where'], func_get_args());

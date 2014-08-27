@@ -56,8 +56,9 @@ class Loader
         $foreignKey = !empty($options['foreignKey']) ? $options['foreignKey'] : Rails::services()->get('inflector')->underscore($name) . '_id';
         
         $query = $this->buildQuery($options);
+        $fKey  = $record->getAttribute($foreignKey);
         
-        if ($fKey = $record->getAttribute($foreignKey)) {
+        if ($fKey) {
             return $query->where(['id' => $fKey])->first() ?: false;
         }
         
@@ -96,7 +97,7 @@ class Loader
         if ($proxyKind) {
             $query = new CollectionProxy($options['className'], $proxyKind, $record, $options['foreignKey']);
         } else {
-            $query = $options['className']::getRelation();
+            $query = $options['className']::all();
         }
         
         # options[0], if present, it's an anonymous function to customize the relation.

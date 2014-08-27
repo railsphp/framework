@@ -31,6 +31,11 @@ abstract class PersistedModel extends ActiveModel\Base
      */
     protected static $persistence;
     
+    /**
+     * Use `all()` to get a new relation.
+     *
+     * @return Relation
+     */
     protected static function getRelation()
     {
         return new Relation(get_called_class());

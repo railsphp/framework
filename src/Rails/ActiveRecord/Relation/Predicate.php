@@ -271,10 +271,23 @@ abstract class Predicate implements \IteratorAggregate
     }
     
     /**
-     * $where->equal(['id' => $wantedId]);
+     * $where->equal('id', $wantedId);
+     * $where->equal(['id' => $wantedId, 'name' => $wantedName]);
      */
-    public function equal()
+    public function equal($param, $value = null)
     {
+        if (func_num_args() == 1) {
+            if (!is_array($param)) {
+                throw new Exception\InvalidArgumentException(sprintf(
+                    "An array is expected when passing one value, received %s",
+                    gettype($param)
+                ));
+            }
+            $params = $param;
+        } else {
+            $params = [$param => $value];
+        }
+        
         foreach ($params as $columnName => $value) {
             $this->addCondition('equalTo', [$columnName, $value]);
         }

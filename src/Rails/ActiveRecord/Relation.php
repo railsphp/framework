@@ -2,6 +2,7 @@
 namespace Rails\ActiveRecord;
 
 use Zend\Db\Sql\Select;
+// use Rails\ActiveRecord\Relation\Select;
 use Zend\Db\Sql\Predicate as ZfPredicate;
 use Zend\Paginator\Adapter\DbSelect as Paginator;
 use Rails\ActiveRecord\Exception\RecordNotFoundException;
