@@ -118,7 +118,7 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
      * resulting in "... JOIN `users` ON `users`.`id` = `1`", ending in "Unknown column 1" error.
      *
      */
-    public function join($tableName, $on, $columns = false, $type = Select::JOIN_INNER)
+    public function join($tableName, $on, $type = 'inner', $columns = false)
     {
         if (is_array($on)) {
             $expression = isset($on[0]) ? $on[0] : '';
@@ -126,12 +126,13 @@ abstract class AbstractRelation implements \IteratorAggregate, \Countable
             $types      = isset($on[2]) ? $on[2] : [];
             $on         = new Expression($expression, $parameters, $types);
         }
+        
         $rel = $this->currentOrClone();
         $rel->select->join($tableName, $on, $columns, $type);
         return $rel;
     }
     
-    public function order($order)
+    public function order($order, $direction = null)
     {
         $rel = $this->currentOrClone();
         $rel->select->order($order);

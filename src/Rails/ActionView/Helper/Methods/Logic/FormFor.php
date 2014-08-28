@@ -35,7 +35,7 @@ class FormFor
                     $token = new ActionToken($options['url']);
                 }
                 $action  = $token->action();
-                $urlPath = $baseHelper->routeSet()->urlFor($token->toString());
+                $urlPath = $baseHelper->urlFor($token->toString());
             }
         } else {
             if ($id = $model->id()) {
@@ -45,7 +45,7 @@ class FormFor
                 $action = 'create';
                 $urlParams = [$controller . '#' . $action];
             }
-            $urlPath = $baseHelper->routeSet()->urlFor($urlParams);
+            $urlPath = $baseHelper->urlFor($urlParams);
         }
         
         if (!isset($options['html'])) {

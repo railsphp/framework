@@ -473,7 +473,7 @@ trait FormTagTrait
         
         if ($urlOptions) {
             if (!$this->isUrl($urlOptions)) {
-                $options['action'] = $this->routeSet->urlFor($urlOptions);
+                $options['action'] = $this->urlFor($urlOptions);
             } else {
                 $options['action'] = $urlOptions;
             }

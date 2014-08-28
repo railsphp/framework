@@ -173,13 +173,18 @@ class Relation extends Relation\AbstractRelation
                     ));
                 }
                 
+                $relation = isset($options['className']) ?
+                    new self($options['className']) :
+                    null;
+                
                 $this->includes[$assocName] = [
                     'options'  => $options,
-                    'relation' => new self($options['className'])
+                    'modifier' => $modifier,
+                    'relation' => $relation
                 ];
             }
                 
-            if ($modifier) {
+            if ($modifier && $relation) {
                 $modifier($this->includes[$assocName]['relation']);
             }
         }
@@ -298,6 +303,25 @@ class Relation extends Relation\AbstractRelation
         $this->load();
     }
     
+    public function order($order, $direction = null)
+    {
+        if ($direction) {
+            if ($direction === 1) {
+                $order .= ' ASC';
+            } elseif ($direction === -1) {
+                $order .= ' DESC';
+            } else {
+                throw new Exception\InvalidArgumentException(sprintf(
+                    "Direction must be integer, either 1 or -1, %s passed",
+                    $direction
+                ));
+            }
+        }
+        $rel = $this->currentOrClone();
+        $rel->select->order($order);
+        return $rel;
+    }
+    
     protected function loadRecords($select)
     {
         return parent::loadRecords(
@@ -405,6 +429,8 @@ class Relation extends Relation\AbstractRelation
                 break;
             
             case 'hasOne':
+                
+                // $includeRel = new self($options['className']);
                 $includeRel->where([$options['foreignKey'] => $rowsPks]);
                 
                 foreach ($members as $member) {
@@ -418,6 +444,43 @@ class Relation extends Relation\AbstractRelation
                 break;
             
             case 'belongsTo':
+                if (isset($options['polymorphic'])) {
+                    $polymorphicModels = [];
+                    $assocTypeAttr = $assocName . 'Type';
+                    $assocIdAttr   = $assocName . 'Id';
+                    
+                    foreach ($members as $member) {                        
+                        $assocType = $member->$assocTypeAttr();
+                        if (!isset($polymorphicModels[$assocType])) {
+                            $polymorphicModels[$assocType] = [];
+                        }
+                        $polymorphicModels[$assocType][] = $member->$assocIdAttr();
+                    }
+                    
+                    foreach (array_keys($polymorphicModels) as $modelName) {
+                        $includeRel = new self($modelName);
+                        if ($data['modifier']) {
+                            $data['modifier']($includeRel);
+                        }
+                        
+                        $models = $includeRel->where([$modelName::primaryKey() => $polymorphicModels[$modelName]]);
+                        
+                        foreach ($models as $model) {
+                            foreach ($members as $member) {
+                                if ($member->$assocIdAttr() == $model->id()) {
+                                    $member->setAssociation(
+                                        $assocName,
+                                        $model,
+                                        true
+                                    );
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                
                 $assocPk = $options['className']::primaryKey();
                 $includeRel
                     ->where([

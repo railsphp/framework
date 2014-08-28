@@ -77,6 +77,11 @@ class Extractor
                     $options['className'] = ucfirst($inflector->singularize($name));
                     break;
                 
+                case 'belongsTo':
+                    if (!empty($options['polymorphic'])) {
+                        break;
+                    }
+                
                 default:
                     $options['className'] = ucfirst($name);
                     break;

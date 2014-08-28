@@ -51,7 +51,14 @@ class Loader
     
     protected function loadBelongsTo($record, $name, array $options)
     {
-        empty($options['className']) && $options['className'] = ucfirst($name);
+        if (empty($options['className'])) {
+            if (empty($options['polymorphic'])) {
+                $options['className'] = ucfirst($name);
+            } else {
+                $assocType = $name . 'Type';
+                $options['className'] = $record->$assocType();
+            }
+        }
         
         $foreignKey = !empty($options['foreignKey']) ? $options['foreignKey'] : Rails::services()->get('inflector')->underscore($name) . '_id';
         

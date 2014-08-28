@@ -38,21 +38,21 @@ trait UrlTrait
         return $this->linkToIf(!$this->currentPage($urlOptions), $text, $urlOptions, $attrs, $fallback);
     }
     
-    /**
-     * @var string|array $params
-     */
-    public function urlFor($params, array $options = [])
-    {
-        return $this->routeSet->urlFor($params, $options);
-    }
+    // /**
+     // * @var string|array $params
+     // */
+    // public function urlFor($params, array $options = [])
+    // {
+        // return $this->routeSet->urlFor($params, $options);
+    // }
     
-    /**
-     * @var string|array $params
-     */
-    public function pathFor($routeName, array $vars = [], array $options = [])
-    {
-        return $this->routeSet->pathFor($routeName, $vars, $options);
-    }
+    // /**
+     // * @var string|array $params
+     // */
+    // public function pathFor($routeName, array $vars = [], array $options = [])
+    // {
+        // return $this->routeSet->pathFor($routeName, $vars, $options);
+    // }
     
     public function isCurrentPage($options)
     {
@@ -121,16 +121,19 @@ trait UrlTrait
             (
                 is_array($urlParams) ||
                 (
-                    strpos($urlParams, 'http') !== 0 &&
-                    strpos($urlParams, '/')    !== 0
+                    is_string($urlParams) &&
+                    (
+                        strpos($urlParams, 'http') !== 0 &&
+                        strpos($urlParams, '/')    !== 0
+                    )
                 )
             )
         ) {
-            if (!is_array($urlParams)) {
-                $urlParams = [$urlParams];
-            }
+            // if (!is_array($urlParams)) {
+                // $urlParams = [$urlParams];
+            // }
             
-            return $this->routeSet->urlFor($urlParams, $options);
+            return $this->urlFor($urlParams, $options);
         } else {
             return $urlParams;
         }

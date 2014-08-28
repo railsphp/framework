@@ -2,6 +2,7 @@
 namespace Rails\Console;
 
 use Rails\Generator\Tasks\GenerateTask;
+use Rails\Application\Tasks\RenameTask;
 use Rails\Assets\Tasks\CompileTask;
 use Rails\ActiveRecord\Tasks\MigrateTask;
 use Rails\ActiveRecord\Tasks\CreateDatabaseTask;
@@ -37,7 +38,8 @@ class TaskApplication
             new CreateDatabaseTask(),
             new SeedTask(),
             new DumpTask(),
-            new TestTask()
+            new TestTask(),
+            new RenameTask()
         ]);
     }
     

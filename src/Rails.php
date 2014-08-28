@@ -229,16 +229,14 @@ class Rails
         
         $config = self::serviceManager()->get('rails.config');
         $config->merge($appConfig);
-        // $config = 
-        // var_dump($config);
+        
         $rootPath = new Path($config['root']);
         $config->merge([
             'paths' => [
                 'root' => $rootPath
             ]
         ], true);
-        // var_dump($config);exit;
-        // var_dump($config, isset($config['paths']), isset($config['paths']['public_path']));exit;
+        
         if (!isset($config['paths']['public_path'])) {
             $config['paths']['public_path'] = $rootPath->extend('public');
         } else {
@@ -257,7 +255,6 @@ class Rails
             self::$root = $config['paths']['root'];
             
             self::$serviceManager->setService('app.conf', $config);
-            // self::$serviceManager->setService('app.conf', $config);
             
             error_reporting(E_ALL);
             

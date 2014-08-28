@@ -646,7 +646,7 @@ abstract class Base
             );
         }
         
-        $location = $this->computeRedirectToLocation($location);
+        $location = $this->urlFor($location);
         # TODO: if location is null, throw an exception: route not found.
         $this->response()->setLocation($location);
         
@@ -738,29 +738,29 @@ abstract class Base
             (strlen($class) - strlen(self::APP_CONTROLLER_CLASS));
     }
     
-    # TODO: move this method to RoutePathSearchTrait
-    protected function computeRedirectToLocation($params)
-    {
-        if (is_string($params)) {
-            if ($params == 'root') {
-                if ($this->routeSet->requestRoute()) {
-                    $namespaces = implode('/', $this->routeSet->requestRoute()->to()->namespaces());
-                    if ($namespaces) {
-                        $params = $namespaces . '/root';
-                    }
-                }
-                return $this->routeSet->pathFor($params);
-            } elseif ($params == '/root') {
-                return $this->routeSet->pathFor('root');
-            } elseif (
-                strpos($params, '/')    === 0 ||
-                strpos($params, 'http') === 0
-            ) {
-                return $params;
-            } elseif (strpos($params, ActionToken::METHOD_SEPARATOR) === false) {
-                return $this->routeSet->pathFor($params);
-            }
-        }
-        return $this->routeSet->urlFor($params);
-    }
+    // # TODO: move this method to RoutePathSearchTrait
+    // protected function computeRedirectToLocation($params)
+    // {
+        // if (is_string($params)) {
+            // if ($params == 'root') {
+                // if ($this->routeSet->requestRoute()) {
+                    // $namespaces = implode('/', $this->routeSet->requestRoute()->to()->namespaces());
+                    // if ($namespaces) {
+                        // $params = $namespaces . '/root';
+                    // }
+                // }
+                // return $this->routeSet->pathFor($params);
+            // } elseif ($params == '/root') {
+                // return $this->routeSet->pathFor('root');
+            // } elseif (
+                // strpos($params, '/')    === 0 ||
+                // strpos($params, 'http') === 0
+            // ) {
+                // return $params;
+            // } elseif (strpos($params, ActionToken::METHOD_SEPARATOR) === false) {
+                // return $this->routeSet->pathFor($params);
+            // }
+        // }
+        // return $this->routeSet->urlFor($params);
+    // }
 }
