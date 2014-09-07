@@ -83,7 +83,7 @@ trait AttributedModelTrait
     
     public function getProperty($name)
     {
-        if (Attributes::isClassAttribute(get_called_class(), $name)) {
+        if (Attributes::isClassAttribute(get_called_class(), $name)) { 
             return $this->getAttribute($name);
         } elseif ($type = AccessibleProperties::getProperty(get_called_class(), $name)) {
             if (isset($type['propName'])) {
@@ -95,7 +95,8 @@ trait AttributedModelTrait
         
         throw new Exception\InvalidArgumentException(
             sprintf(
-                "Trying to get unknown property '%s'",
+                "Trying to get unknown property %s::%s",
+                get_called_class(),
                 $name
             )
         );
@@ -157,14 +158,18 @@ trait AttributedModelTrait
     protected function setAndFilterProperties(array &$attributes)
     {
         $accProps = AccessibleProperties::getPropertiesUnderscored(get_called_class());
-        
+        $this->filterProperties($attributes, $accProps);
+    }
+    
+    protected function filterProperties(array &$attributes, $accProps)
+    {
         foreach ($attributes as $attrName => $value) {
             if (isset($accProps[$attrName])) {
                 if (isset($accProps[$attrName]['propName'])) {
                     $this->{$accProps[$attrName]['propName']} = $value;
                 } else {
                     if ($accProps[$attrName][1]) {
-                        $this->{$accProps[$attrName]}($value);
+                        $this->$attrName($value);
                     }
                 }
                 unset($attributes[$attrName]);
@@ -185,7 +190,28 @@ trait AttributedModelTrait
     
     public function hasChanged()
     {
-        return $this->attributes->dirty()->hasChanged();
+        return $this->attributes->dirty()->hasChanged() || $this->embeddedAssocsChanged();
+    }
+    
+    public function embeddedAssocsChanged()
+    {
+        $changed = false;
+        foreach ($this->getAssociations()->embedded() as $type => $object) {
+            if ($type == 'hasMany') {
+                foreach ($object as $model) {
+                    if ($model->hasChanged()) {
+                        $changed = true;
+                        break 2;
+                    }
+                }
+            } else {
+                if ($object->hasChanged()) {
+                    $changed = true;
+                    break;
+                }
+            }
+        }
+        return $changed;
     }
     
     public function attributeChanged($attrName)
@@ -251,6 +277,7 @@ trait AttributedModelTrait
     
     /**
      * @see initAttrsDirtyModel()
+     * @see getAttributesClass()
      */
     protected function initializeAttributes(array $attributes)
     {
@@ -263,12 +290,24 @@ trait AttributedModelTrait
             $className::initAttributeSet();
         }
         
-        $this->attributes = new Attributes($className, $this->defaultAttributes());
+        $attrsClass = $this->getAttributesClass();
+        $this->attributes = new $attrsClass($className, $this->defaultAttributes());
         
         if ($attributes) {
             $this->setAndFilterProperties($attributes);
             $this->getAttributes()->set($attributes, null, $this->initAttrsDirtyModel());
         }
+    }
+    
+    /**
+     * Returns the Attributes class. Useful if child classes need
+     * a to use a different class.
+     *
+     * @return string
+     */
+    protected function getAttributesClass()
+    {
+        return __NAMESPACE__ . '\Attributes'; 
     }
     
     protected function defaultAttributes()

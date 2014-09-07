@@ -18,7 +18,14 @@ class Dispatcher
             'routes' => $app->routes()
         ]);
         
-        $helperSet = new HelperSet();
+        $helperSet = new HelperSet(
+            $app->request(),
+            $app->parameters()
+        );
+        $helperSet->setRouteSet($app->routes());
+        
+        $actionView->setHelperSet($helperSet);
+        
         $presenter = new RoutePresenter($helperSet);
         $helperSet->invoke('setPresenter', [$presenter]);
         

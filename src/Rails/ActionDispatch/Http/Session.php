@@ -16,41 +16,41 @@ class Session implements \IteratorAggregate
         return new \ArrayIterator($_SESSION);
     }
     
-    public function __set($prop, $value)
+    public function __set($key, $value)
     {
-        $this->set($prop, $value);
+        $this->set($key, $value);
     }
     
-    public function __get($prop)
+    public function __get($key)
     {
-        return $this->get($prop);
+        return $this->get($key);
     }
     
     public function set($key, $value)
     {
         if (is_object($value)) {
-            $this->$prop = $value;
-            $_SESSION[$prop] = $value;
+            $this->$key = $value;
+            $_SESSION[$key] = $value;
         } elseif (is_array($value)) {
-            $arr = new GlobalVariableIndex($value, '_SESSION', $prop);
-            $this->$prop = $arr;
+            $arr = new GlobalVariableIndex($value, '_SESSION', $key);
+            $this->$key = $arr;
         } else {
-            $_SESSION[$prop] = $value;
+            $_SESSION[$key] = $value;
         }
         return $this;
     }
     
-    public function get($prop)
+    public function get($key)
     {
-        if (isset($_SESSION[$prop])) {
-            if (is_array($_SESSION[$prop])) {
-                $this->$prop = new GlobalVariableIndex($_SESSION[$prop], '_SESSION', $prop);
-                return $this->$prop;
-            } elseif (is_object($_SESSION[$prop])) {
-                $this->$prop = $_SESSION[$prop];
-                return $this->$prop;
+        if (isset($_SESSION[$key])) {
+            if (is_array($_SESSION[$key])) {
+                $this->$key = new GlobalVariableIndex($_SESSION[$key], '_SESSION', $key);
+                return $this->$key;
+            } elseif (is_object($_SESSION[$key])) {
+                $this->$key = $_SESSION[$key];
+                return $this->$key;
             } else {
-                return $_SESSION[$prop];
+                return $_SESSION[$key];
             }
         }
         return null;
@@ -71,9 +71,9 @@ class Session implements \IteratorAggregate
         return session_id();
     }
     
-    public function delete($prop)
+    public function delete($key)
     {
-        unset($this->$prop, $_SESSION[$prop]);
+        unset($this->$key, $_SESSION[$key]);
     }
     
     /**

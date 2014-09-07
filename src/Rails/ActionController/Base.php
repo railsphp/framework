@@ -313,7 +313,7 @@ abstract class Base
      *
      * @see Request::getUploadedFile()
      */
-    public function getFile(/*...$keys*/)
+    public function getUploadedFile(/*...$keys*/)
     {
         return call_user_func_array([$this->request(), 'getUploadedFile'], func_get_args());
     }
@@ -323,7 +323,7 @@ abstract class Base
      *
      * @see Request::getUploadedFiles()
      */
-    public function getFiles(/*...$keys*/)
+    public function getUploadedFiles(/*...$keys*/)
     {
         return call_user_func_array([$this->request(), 'getUploadedFiles'], func_get_args());
     }
@@ -737,30 +737,4 @@ abstract class Base
             strpos($class, self::APP_CONTROLLER_CLASS) ===
             (strlen($class) - strlen(self::APP_CONTROLLER_CLASS));
     }
-    
-    // # TODO: move this method to RoutePathSearchTrait
-    // protected function computeRedirectToLocation($params)
-    // {
-        // if (is_string($params)) {
-            // if ($params == 'root') {
-                // if ($this->routeSet->requestRoute()) {
-                    // $namespaces = implode('/', $this->routeSet->requestRoute()->to()->namespaces());
-                    // if ($namespaces) {
-                        // $params = $namespaces . '/root';
-                    // }
-                // }
-                // return $this->routeSet->pathFor($params);
-            // } elseif ($params == '/root') {
-                // return $this->routeSet->pathFor('root');
-            // } elseif (
-                // strpos($params, '/')    === 0 ||
-                // strpos($params, 'http') === 0
-            // ) {
-                // return $params;
-            // } elseif (strpos($params, ActionToken::METHOD_SEPARATOR) === false) {
-                // return $this->routeSet->pathFor($params);
-            // }
-        // }
-        // return $this->routeSet->urlFor($params);
-    // }
 }

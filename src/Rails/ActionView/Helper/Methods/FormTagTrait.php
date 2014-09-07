@@ -6,6 +6,7 @@ use Rails\ActiveModel\Collection;
 use Rails\ActiveModel\Attributes\AccessibleProperties;
 use Rails\ActiveModel\Attributes\Attributes;
 use Rails\ActionView\FormBuilder;
+use Rails\ActionView\Exception;
 
 /**
  * These are the methods that create form-related tags. FormTrait and FormBuilder
@@ -486,10 +487,10 @@ trait FormTagTrait
     {
         if (Attributes::isClassAttribute($modelClass, $propName)) {
             return function ($model) use ($propName) {
-                $model->getAttribute($propName);
+                return $model->getAttribute($propName);
             };
         } else {
-            $property = AccessibleProperties::getProperty($propName);
+            $property = AccessibleProperties::getProperty($modelClass, $propName);
             if ($property === true) {
                 return function ($model) use ($propName) {
                     $model->$propName;
@@ -503,9 +504,9 @@ trait FormTagTrait
         
         throw new Exception\RuntimeException(
             sprintf(
-                "Unknown attribute or property %s for class %s",
-                $propName,
-                $modelClass
+                "Unknown attribute or property %s::%s",
+                $modelClass,
+                $propName
             )
         );
     }

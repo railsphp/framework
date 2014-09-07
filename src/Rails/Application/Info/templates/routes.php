@@ -1,5 +1,4 @@
 <?php $this->provide('pageTitle', 'Routes') ?>
-<?php $this->provide('pageScripts', $this->partial('route_scripts')) ?>
 
 <style>
 .routes-container {
@@ -78,3 +77,5 @@ table.routes-table .matched_paths {
     </tbody>
   </table>
 </div>
+
+<?= $this->partial('route_scripts') ?>

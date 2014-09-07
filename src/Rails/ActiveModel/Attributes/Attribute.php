@@ -11,12 +11,12 @@ class Attribute implements AttributeInterface
     
     protected $serializable = false;
     
-    public function __construct($name, $type = 'string', /*$maxLength = 0, */$defaultValue = null, $serializable = false)
+    public function __construct($name, $type = 'string', $defaultValue = null, $serializable = false)
     {
-        $this->name         = $name;
-        $this->type         = $type;
-        $this->defaultValue = $defaultValue;
-        $this->serializable = $serializable;
+        $this->name = $name;
+        $this->setType($type);
+        $this->setDefaultValue($defaultValue);
+        $this->setSerializable($serializable);
     }
     
     public function name()

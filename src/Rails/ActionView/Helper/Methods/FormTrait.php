@@ -158,19 +158,25 @@ trait FormTrait
     {
         $inf = $this->getService('inflector');
         $underscoredProp = $inf->underscore($property);
-        $options['for']  = $inf->underscore($objectName) . '_' . $underscoredProp;
+        
+        if (!isset($options['for'])) {
+            $options['for']  = $inf->underscore(is_object($objectName) ? get_class($objectName) : $objectName) . '_' . $underscoredProp;
+        }
         
         if (is_array($content)) {
             $options = $content;
             $content = null;
         }
+        
         if (!$content) {
-            $content = $inf->humanize($underscoredProp);
+            $content = $underscoredProp->humanize();
         }
         
-        $options['value'] = $content;
-        
-        return $this->formField('label', $objectName, $property, $options, true);
+        return $this->contentTag(
+            'label',
+            $content,
+            $options
+        );
     }
     
     /**
@@ -254,12 +260,12 @@ trait FormTrait
         $this->normalizeSizeOption($options);
         $options['value'] = $this->getObject($objectName)->getProperty($property);
         $this->escapeIfOption($options['value'], $options);
-        return $this->formField('textarea', $objectName, $property, $options, true);
+        return $this->helperSet->invoke('formField', ['textarea', $objectName, $property, $options, true]);
     }
     
     public function textField($objectName, $property, array $options = [])
     {
-        return $this->formField('text', $objectName, $property, $options);
+        return $this->helperSet->invoke('formField', ['text', $objectName, $property, $options]);
     }
     
     public function urlField($objectName, $property, array $options = [])
@@ -330,7 +336,7 @@ trait FormTrait
         return $this->getService('inflector')->underscore(end($names));
     }
     
-    protected function getObject($objectName)
+    public function getObject($objectName)
     {
         if (is_string($objectName)) {
             $object = $this->helperSet->assigns()->get($objectName);

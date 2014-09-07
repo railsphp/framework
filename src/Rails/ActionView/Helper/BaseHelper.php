@@ -9,7 +9,8 @@ class BaseHelper extends AbstractHelper
     use Methods\AssetTagTrait, Methods\AssetUrlTrait, Methods\TagTrait,
         Methods\SanitizeTrait, Methods\PresenterTrait,
         Methods\InflectorTrait, Methods\UrlTrait,
-        Methods\FormTrait, Methods\FormTagTrait, Methods\TranslationTrait;
+        Methods\FormTrait, Methods\FormTagTrait, Methods\TranslationTrait,
+        Methods\FormOptionsTrait;
     
     protected $routeSet;
     

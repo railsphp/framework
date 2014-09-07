@@ -59,7 +59,8 @@ trait CallbackUsableTrait
         $forbiddenDeclarers = [
             'Rails\ActiveModel\Base',
             'Rails\ActiveRecord\Base',
-            'Rails\ActiveRecord\Persistence\PersistedModel',
+            'Rails\ActiveRecord\Mongo\Base',
+            'Rails\ActiveRecord\Persistence\PersistedModel\PersistedModel',
         ];
         
         foreach ($reflection->getMethods() as $method) {

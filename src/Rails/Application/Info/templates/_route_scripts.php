@@ -34,16 +34,26 @@
   function eachElemsForPath(elems, path, func) {
     each(elems, function(e){
       var reg = e.getAttribute("data-regexp");
-      console.log(reg, path, RegExp(reg))
+      
       if (path.match(RegExp(reg))) {
         func(e.parentNode.cloneNode(true));
       }
     })
   }
 
-  // Ensure path always starts with a slash "/" and remove params or fragments
+  // Ensure path always starts with a slash "/" and remove base path, params or fragments
   function sanitizePath(path) {
-    var path = path.charAt(0) == '/' ? path : "/" + path;
+    var basePath    = "<?= $this->request()->protocol() . $this->request()->host() . $this->urlFor('base') ?>";
+    
+    if (path.indexOf(basePath) >= 0) {
+        var path = path.substr(basePath.length);
+        if (!path) {
+            path = '/';
+        }
+    } else {
+        var path = path.charAt(0) == '/' ? path : '/' + path;
+    }
+    
     return path.replace(/\#.*|\?.*/, '');
   }
 

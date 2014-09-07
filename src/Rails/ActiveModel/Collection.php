@@ -155,11 +155,23 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     /**
      * Searches objects for a property with a value and returns object.
      */
-    public function search($prop, $value)
+    public function search($criteria, $value = null)
     {
         foreach ($this->members as $obj) {
-            if ($obj->getProperty($prop) == $value)
-                return $obj;
+            if (is_string($criteria)) {
+                if ($obj->getProperty($criteria) == $value) {
+                    return $obj;
+                }
+            } elseif ($criteria instanceof Closure) {
+                if ($criteria($obj)) {
+                    return $obj;
+                }
+            } else {
+                throw new Exception\InvalidArgumentException(sprintf(
+                    "Argument 1 must be either string or Closure, %s passed",
+                    gettype($criteria)
+                ));
+            }
         }
         return false;
     }

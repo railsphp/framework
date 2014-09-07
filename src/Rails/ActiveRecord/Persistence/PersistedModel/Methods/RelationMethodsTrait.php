@@ -1,8 +1,6 @@
 <?php
 namespace Rails\ActiveRecord\Persistence\PersistedModel\Methods;
 
-use Rails\ActiveRecord\Relation;
-
 trait RelationMethodsTrait
 {
     /**
@@ -17,22 +15,22 @@ trait RelationMethodsTrait
     
     public static function all()
     {
-        return self::getRelation();
+        return static::getRelation();
     }
     
     public static function select()
     {
-        return call_user_func_array([self::getRelation(), 'select'], func_get_args());
+        return call_user_func_array([self::all(), 'select'], func_get_args());
     }
     
     public static function where()
     {
-        return call_user_func_array([self::getRelation(), 'where'], func_get_args());
+        return call_user_func_array([self::all(), 'where'], func_get_args());
     }
     
     public static function rawWhere()
     {
-        return call_user_func_array([self::getRelation(), 'rawWhere'], func_get_args());
+        return call_user_func_array([self::all(), 'rawWhere'], func_get_args());
     }
     
     public static function find($id)
@@ -40,9 +38,9 @@ trait RelationMethodsTrait
         return self::all()->find($id);
     }
     
-    public static function order($order)
+    public static function order($field, $direction = 1)
     {
-        return self::all()->order($order);
+        return self::all()->order($field, $direction);
     }
     
     public static function first($limit = 1)

@@ -1,6 +1,10 @@
 <?php
 namespace Rails\ActionView\Helper\Methods;
 
+use Closure;
+use Rails\ActiveModel\Collection;
+use Rails\ActiveRecord\Relation\RelationInterface;
+
 trait FormOptionsTrait
 {
     // public function collectionCheckBoxes(
@@ -36,12 +40,13 @@ trait FormOptionsTrait
         } elseif (
             is_array($options)              &&
             isset($options[0])              &&
-            $options[0] instanceof Collection
+            ($options[0] instanceof Collection || $options[0] instanceof RelationInterface)
         ) {
             list($models, $optionName, $valueName) = $options;
-            
+            $models = $models->toArray();
             $options = [];
-            if ($models->any()) {
+            
+            if ($models) {
                 $modelClass = get_class($models[0]);
                 
                 $optionGetter = $this->getPropertyGetter($modelClass, $optionName);
@@ -55,6 +60,7 @@ trait FormOptionsTrait
         
         $selectValue = (string)$selectValue;
         $tags = [];
+        
         foreach ($options as $name => $value) {
             $value = (string)$value;
             $tags[] = $this->formFieldTag(
@@ -71,38 +77,18 @@ trait FormOptionsTrait
     
     public function select($objectName, $property, $optionTags, array $options = [])
     {
-        $value      = $this->getObject($objectName)->getProperty($property);
-        $optionTags = $this->optionsForSelect($optionTags, $value);
+        if (array_key_exists('value', $options)) {
+            $value = $options['value'];
+            unset($options['value']);
+        } else {
+            $value = $this->getObject($objectName)->getProperty($property);
+        }
         
-        $this->normalizeSelectOptions($optionTags, $options);
+        if (!is_string($optionTags)) {
+            $optionTags = $this->optionsForSelect($optionTags, $value);
+            $this->normalizeSelectOptions($options, $optionTags);
+        }
         
-        // if (isset($attrs['includeBlank'])) {
-            // if ($attrs['includeBlank'] === true) {
-                // $text = '';
-            // } else {
-                // $text = $attrs['includeBlank'];
-            // }
-            
-            // $options = $this->contentTag(
-                // 'option',
-                // $text,
-                // ['value' => '', 'allowBlankAttrs' => true]
-            // ) . "\n" . $options;
-            // unset($attrs['includeBlank'], $attrs['prompt']);
-        // }
-        // if (isset($attrs['prompt'])) {
-            // if (is_bool(strpos($options, 'selected="1"'))) {
-                // $options = $this->contentTag(
-                    // 'option',
-                    // $attrs['prompt'],
-                    // ['value' => '', 'allowBlankAttrs' => true]
-                // ) . "\n" . $options;
-            // }
-            // unset($attrs['prompt']);
-        // }
-        
-        // $attrs['value'] = $options;
-        
-        return $this->buildFormField('select', $objectName, $property, $options, true);
+        return $this->helperSet->invoke('formField', ['select', $objectName, $property, $options, true]);
     }
 }

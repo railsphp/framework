@@ -4,6 +4,7 @@ namespace Rails\ActiveRecord\Connection;
 use Zend\Db\Adapter\Adapter;
 use Rails\ActiveRecord\Exception;
 use Rails\ActiveRecord\Adapter\DriverCreator;
+use Rails\ActiveRecord\Mongo\Connection as MongoConnection;
 
 class Manager extends AbstractManager
 {
@@ -25,22 +26,35 @@ class Manager extends AbstractManager
             }
             
             $connectionConfig = $this->connections[$connectionName];
-            $driver = DriverCreator::create($connectionName, $connectionConfig);
             
-            $adapterParams = [
-                'driver' => $driver
-            ];
-            
-            if (isset($options['allowProfiler']) && !$options['allowProfiler']) {
-                $adapterParams['profiler'] = false;
+
+            if (!isset($connectionConfig['driver'])) {
+                throw new Exception\InvalidArgumentException(
+                    'A "driver" key to be present inside the database config parameters'
+                );
             }
             
-            $adapter = new Adapter($adapterParams);
-            $this->adapters[$connectionName] = $adapter;
-            $driver->getConnection()->setAdapter($adapter);
-            
-            if (\Rails::cli()) {
-                $adapter->setProfiler(new \Zend\Db\Adapter\Profiler\Profiler());
+            if ($connectionConfig['driver'] == 'mongo') {
+                $connection = new MongoConnection($connectionConfig);
+                $this->adapters[$connectionName] = $connection;
+            } else {
+                $driver = DriverCreator::create($connectionName, $connectionConfig);
+                
+                $adapterParams = [
+                    'driver' => $driver
+                ];
+                
+                if (isset($options['allowProfiler']) && !$options['allowProfiler']) {
+                    $adapterParams['profiler'] = false;
+                }
+                
+                $adapter = new Adapter($adapterParams);
+                $this->adapters[$connectionName] = $adapter;
+                $driver->getConnection()->setAdapter($adapter);
+                
+                if (\Rails::cli()) {
+                    $adapter->setProfiler(new \Zend\Db\Adapter\Profiler\Profiler());
+                }
             }
         }
         return $this->adapters[$connectionName];

@@ -51,6 +51,11 @@ class Collection extends BaseCollection
         return $this->totalRows;
     }
     
+    public function totalPages()
+    {
+        return ceil($this->totalRows / $this->perPage);
+    }
+    
     public function setPage($page)
     {
         $this->page = (int)$page;
@@ -59,6 +64,11 @@ class Collection extends BaseCollection
     public function setPerPage($perPage)
     {
         $this->perPage = (int)$perPage;
+    }
+    
+    public function setTotalRows($totalRows)
+    {
+        $this->totalRows = (int)$totalRows;
     }
     
     public function setPaginator(Paginator $paginator)

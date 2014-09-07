@@ -134,25 +134,6 @@ abstract class PersistedModel extends ActiveModel\Base
     public static function deletedAtEmptyValue()
     {
         return null;
-        // switch (static::deletedAtType()) {
-            // case 'date':
-                // return '0000-00-00';
-            
-            // case 'datetime':
-                // return '0000-00-00 00:00:00';
-            
-            // case 'timestamp':
-                // return '0';
-            
-            // /**
-             // * To explicity note that integer and boolean types
-             // * get 0 as value.
-             // */
-            // case 'integer':
-            // case 'boolean':
-            // default:
-                // return '0';
-        // }
     }
     
     public function __construct(array $attributes = [], $isNewRecord = true)
@@ -173,6 +154,34 @@ abstract class PersistedModel extends ActiveModel\Base
         # TODO: Check scopes, etc.
         
         return parent::__call($attrName, $params);
+    }
+    
+    public function getCallbacks()
+    {
+        if (!$this->callbacks) {
+            parent::getCallbacks();
+            
+            $options   = [
+                'scope'         => ['kind', 'name'],
+                'terminator'    => false,
+                'skipAfterCallbacksIfTerminated' => true
+            ];
+            
+            $this->callbacks->defineCallbacks([
+                'create'        => $options,
+                'save'          => $options,
+                'update'        => $options,
+                'destroy'       => $options,
+                'validation'    => $options,
+                'delete'        => $options,
+                'recover'       => $options,
+            ]);
+            
+            foreach ($this->getAllCallbacks() as $kind => $callbacks) {
+                $this->callbacks->setCallbacks($kind, $callbacks);
+            }
+        }
+        return $this->callbacks;
     }
     
     protected function setupValidator()

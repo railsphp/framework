@@ -82,8 +82,9 @@ class AccessibleProperties
         
         foreach ($refl->getProperties() as $prop) {
             if (
-                $prop->getDeclaringClass()->getName() == 'Rails\ActiveModel\Base' ||
-                $prop->getDeclaringClass()->getName() == 'Rails\ActiveRecord\Base'
+                $prop->getDeclaringClass()->getName() == 'Rails\ActiveModel\Base'           ||
+                $prop->getDeclaringClass()->getName() == 'Rails\ActiveRecord\Base'          ||
+                $prop->getDeclaringClass()->getName() == 'Rails\ActiveRecord\Mongo\Base'
             ) {
                 break;
             }
@@ -95,10 +96,10 @@ class AccessibleProperties
             } else {
                 $params = [];
                 
-                $methodName = $prop->getName();
+                $getterMethodName = $prop->getName();
                 if (
-                    $refl->hasMethod($methodName) &&
-                    ($method = $refl->getMethod($methodName)) &&
+                    $refl->hasMethod($getterMethodName) &&
+                    ($method = $refl->getMethod($getterMethodName)) &&
                     $method->isPublic()
                 ) {
                     $params[] = true;
@@ -106,10 +107,10 @@ class AccessibleProperties
                     $params[] = false;
                 }
                 
-                $methodName = 'set' . ucfirst($prop->getName());
+                $setterMethodName = 'set' . ucfirst($prop->getName());
                 if (
-                    $refl->hasMethod($methodName) &&
-                    ($method = $refl->getMethod($methodName)) &&
+                    $refl->hasMethod($setterMethodName) &&
+                    ($method = $refl->getMethod($setterMethodName)) &&
                     $method->isPublic()
                 ) {
                     $params[] = true;

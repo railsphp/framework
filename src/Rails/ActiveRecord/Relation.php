@@ -10,7 +10,7 @@ use Rails\ActiveRecord\Associations\Associations;
 use Rails\ActiveRecord\Associations\CollectionProxy;
 use Rails\ActiveModel\Attributes\Attributes;
 
-class Relation extends Relation\AbstractRelation
+class Relation extends Relation\AbstractRelation implements Relation\RelationInterface
 {
     /**
      * @var string
@@ -22,7 +22,7 @@ class Relation extends Relation\AbstractRelation
      * Possible values are:
      * * `true`: both deleted and non-deleted records.
      * * `false`: non-deleted records only.
-     * * `only`: deleted records only.
+     * * `"only"`: deleted records only.
      *
      * @var bool|string
      * @see selectDeletedRecords()
@@ -68,8 +68,9 @@ class Relation extends Relation\AbstractRelation
     
     public function deleted($value = true)
     {
-        $this->deleted = $value;
-        return $this;
+        $rel = $this->currentOrClone();
+        $rel->deleted = $value;
+        return $rel;
     }
     
     /**
@@ -94,7 +95,7 @@ class Relation extends Relation\AbstractRelation
         if (!$first) {
             throw new RecordNotFoundException(sprintf(
                 "Couldn't find %s with %s=%s",
-                get_called_class(),
+                $this->modelClass,
                 $modelClass::primaryKey(),
                 $id
             ));
@@ -262,6 +263,7 @@ class Relation extends Relation\AbstractRelation
      */
     public function paginate($page, $perPage = null)
     {
+        $page = (int)$page;
         if ($page < 1) {
             $page = 1;
         }

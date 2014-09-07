@@ -8,7 +8,6 @@ class FormFor
 {
     public function render($baseHelper, $model, $options, Closure $block = null)
     {
-
         if ($options instanceof Closure) {
             $block   = $options;
             $options = [];

@@ -138,14 +138,13 @@ class Extractor
                     $options['joinTable'] = $joinTable;
                 }
                 
-                $names      = explode('\\', $class);
-                $modelClass = array_pop($names);
-                
                 if (empty($options['foreignKey'])) {
-                    $options['foreignKey'] = str_replace('/', '_', $inflector->underscore($modelClass)) . '_id';
+                    $options['foreignKey'] =
+                        str_replace('/', '_', $inflector->underscore($class)) . '_id';
                 }
                 if (empty($options['associationForeignKey'])) {
-                    $options['associationForeignKey'] = $inflector->underscore($options['className']) . '_id';
+                    $options['associationForeignKey'] =
+                        str_replace('/', '_', $inflector->underscore($options['className'])) . '_id';
                 }
                 break;
         }

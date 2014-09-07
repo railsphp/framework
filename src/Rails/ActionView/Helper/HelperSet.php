@@ -18,13 +18,13 @@ class HelperSet
      */
     protected $methods = [];
     
-    protected $request = [];
+    protected $request;
     
-    protected $params  = [];
+    protected $params;
     
     protected $assigns = [];
     
-    protected $session = [];
+    protected $session;
     
     public static function addDefaultHelper($className)
     {

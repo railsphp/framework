@@ -1,12 +1,11 @@
 <?php
 namespace Rails\ActiveRecord\Associations;
 
-use Rails\ActiveRecord\Base;
-use Rails\ActiveRecord\Associations\CollectionProxy;
+// use Rails\ActiveRecord\Associations\CollectionProxy;
 
 class Loader
 {
-    public function load(Base $record, $name, array $options)
+    public function load($record, $name, array $options)
     {
         switch ($options['type']) {
             case 'hasOne':
@@ -34,10 +33,6 @@ class Loader
     
     protected function loadHasOne($record, $name, array $options)
     {
-        if (empty($options['className'])) {
-            $options['className'] = $record::getService('inflector')->camelize($name)->toString();
-        }
-        
         $query = $this->buildQuery($options);
         $query->where([$options['foreignKey'] => $record->id()]);
         $first = $query->first();
@@ -60,13 +55,11 @@ class Loader
             }
         }
         
-        $foreignKey = !empty($options['foreignKey']) ? $options['foreignKey'] : Rails::services()->get('inflector')->underscore($name) . '_id';
-        
         $query = $this->buildQuery($options);
-        $fKey  = $record->getAttribute($foreignKey);
+        $fKey  = $record->getAttribute($options['foreignKey']);
         
         if ($fKey) {
-            return $query->where(['id' => $fKey])->first() ?: false;
+            return $query->where([$options['className']::primaryKey() => $fKey])->first() ?: false;
         }
         
         return false;
@@ -77,10 +70,6 @@ class Loader
      */
     protected function loadHasMany($record, $name, $options)
     {
-        if (empty($options['className'])) {
-            $options['className'] = $record::getService('inflector')->singularize($name)->camelize()->toString();
-        }
-        
         $query = $this->buildQuery($options, 'hasMany', $record);
         $query->where([$options['foreignKey'] => $record->id()]);
         

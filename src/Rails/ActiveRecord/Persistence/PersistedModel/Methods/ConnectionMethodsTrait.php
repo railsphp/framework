@@ -25,7 +25,7 @@ trait ConnectionMethodsTrait
     {
         if (!static::$connectionManager) {
             if (self::services()->has('defaultConnectionManager')) {
-                static::$connectionManager = self::getService('defaultConnectionManager');
+                static::setConnectionManager(self::getService('defaultConnectionManager'));
             }
         }
         return static::$connectionManager;

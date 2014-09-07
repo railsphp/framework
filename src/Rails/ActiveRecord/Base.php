@@ -178,33 +178,7 @@ abstract class Base extends Persistence\PersistedModel\PersistedModel
         return parent::__set(static::properAttributeName($prop), $value);
     }
     
-    public function getCallbacks()
-    {
-        if (!$this->callbacks) {
-            parent::getCallbacks();
-            
-            $options   = [
-                'scope'         => ['kind', 'name'],
-                'terminator'    => false,
-                'skipAfterCallbacksIfTerminated' => true
-            ];
-            
-            $this->callbacks->defineCallbacks([
-                'create'        => $options,
-                'save'          => $options,
-                'update'        => $options,
-                'destroy'       => $options,
-                'validation'    => $options,
-                'delete'        => $options,
-                'recover'       => $options,
-            ]);
-            
-            foreach ($this->getAllCallbacks() as $kind => $callbacks) {
-                $this->callbacks->setCallbacks($kind, $callbacks);
-            }
-        }
-        return $this->callbacks;
-    }
+
     
     public function directUpdates(array $attrsValuesPairs)
     {
@@ -246,6 +220,20 @@ abstract class Base extends Persistence\PersistedModel\PersistedModel
             return $this->getAssociations()->load($this, $name);
         }
         return parent::getProperty($name);
+    }
+    
+    protected function createOrUpdate(array $options = [])
+    {
+        return $this->transaction(function() use ($options) {
+            return parent::createOrUpdate($options);
+        });
+    }
+    
+    protected function deleteOrDestroy(array $options = [])
+    {
+        return $this->transaction(function() use ($options) {
+            return parent::deleteOrDestroy($options);
+        });
     }
     
     protected function defaultAttributes()

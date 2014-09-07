@@ -73,7 +73,6 @@ class FormBuilder extends Helper
     
     public function passwordField($property, array $attrs = [])
     {
-        // $this->helper->setDefaultModel($this->model);
         return $this->helper->passwordField($this->inputNamespace, $property, $attrs);
     }
     
@@ -98,30 +97,21 @@ class FormBuilder extends Helper
     
     public function select($property, $options, array $attrs = [])
     {
-        $this->helper->setDefaultModel($this->model);
-        return $this->helper->select($this->inputNamespace, $property, $options, $attrs);
+        return $this->invoke('select', [$this->model, $property, $options, $attrs]);
     }
     
-    public function radioButton($property, $tag_value, array $attrs = [])
+    public function radioButton($property, $tagValue, array $attrs = [])
     {
-        $this->helper->setDefaultModel($this->model);
-        return $this->helper->radioButton($this->inputNamespace, $property, $tag_value, $attrs);
+        return $this->invoke('radioButton', [$this->model, $property, $tagValue, $attrs]);
     }
     
-    public function label($property, $text = '', array $attrs = [])
+    public function label($property, $text = '', array $options = [])
     {
-        if (!$text) {
-            $text = $this->getService('inflector')->humanize($property);
+        if (!isset($options['for'])) {
+            $options['for'] = $this->inputNamespace . '_' . 
+                $this->getService('inflector')->underscore($property);
         }
-        
-        return $this->base()->contentTag(
-            'label',
-            $text,
-            $this->formAttributes(
-                'label',
-                array_merge($attrs, ['for' => $this->inputNamespace . '_' . $property])
-            )
-        );
+        return $this->invoke('label', [$this->model, $property, $text, $this->formAttributes('label', $options)]);
     }
     
     public function submit($value = null, array $attrs = [])
@@ -162,8 +152,7 @@ class FormBuilder extends Helper
     
     public function field($type, $property, array $attrs = [])
     {
-        $this->helper->setDefaultModel($this->model);
-        return $this->helper->formField($type, $this->inputNamespace, $property, $attrs);
+        return $this->invoke('formField', [$type, $this->model, $property, $attrs]);
     }
     
     public function object()

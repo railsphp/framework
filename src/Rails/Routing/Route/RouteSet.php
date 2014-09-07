@@ -1,7 +1,7 @@
 <?php
 namespace Rails\Routing\Route;
 
-use Rails\ActiveRecord\Base;
+use Rails\ActiveModel\Base;
 use Rails\Routing\Resources\Resources;
 use Rails\Routing\ActionToken;
 use Rails\Cache\Cache;

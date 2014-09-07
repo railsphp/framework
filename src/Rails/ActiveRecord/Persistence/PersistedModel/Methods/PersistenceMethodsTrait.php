@@ -262,13 +262,11 @@ trait PersistenceMethodsTrait
     
     protected function createOrUpdate(array $options = [])
     {
-        return $this->transaction(function() use ($options) {
-            if ($this->isNewRecord()) {
-                return $this->createRecord($options);
-            } else {
-                return $this->updateRecord($options);
-            }
-        });
+        if ($this->isNewRecord()) {
+            return $this->createRecord($options);
+        } else {
+            return $this->updateRecord($options);
+        }
     }
     
     protected function createRecord(array $options = [])
@@ -292,11 +290,12 @@ trait PersistenceMethodsTrait
                 $id = static::persistence()->insert($this);
                 
                 if ($id) {
-                    if (Attributes::isClassAttribute(get_called_class(), static::primaryKey())) {
-                        $this->setAttribute(static::primaryKey(), $id);
+                    if (true !== $id) {
+                        if (Attributes::isClassAttribute(get_called_class(), static::primaryKey())) {
+                            $this->setAttribute(static::primaryKey(), $id);
+                        }
+                        $this->isNewRecord = false;
                     }
-                    $this->isNewRecord = false;
-                    
                     return true;
                 }
                 
@@ -339,13 +338,11 @@ trait PersistenceMethodsTrait
     
     protected function deleteOrDestroy(array $options = [])
     {
-        $this->transaction(function() use ($options) {
-            if ($this->isRecoverable() && empty($options['hardDestroy'])) {
-                return $this->deleteRecord($options);
-            } else {
-                return $this->destroyRecord($options);
-            }
-        });
+        if ($this->isRecoverable() && empty($options['hardDestroy'])) {
+            return $this->deleteRecord($options);
+        } else {
+            return $this->destroyRecord($options);
+        }
     }
     
     /**
