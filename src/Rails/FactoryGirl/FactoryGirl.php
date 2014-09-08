@@ -101,7 +101,7 @@ class FactoryGirl
     
     public function sequence($name)
     {
-        return $this->sequences->getValue($name);
+        return $this->sequences->get($name);
     }
     
     public function setFixture($namespace, $name, $value)

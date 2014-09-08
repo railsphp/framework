@@ -10,6 +10,8 @@ class Rails
     
     protected static $root;
     
+    protected static $publicPath;
+    
     protected static $application;
     
     protected static $booted = false;
@@ -47,11 +49,6 @@ class Rails
     public static function path()
     {
         return __DIR__ . '/Rails';
-    }
-    
-    public static function setPublicPath($publicPath)
-    {
-        self::$publicPath = $publicPath;
     }
     
     public static function publicPath()
@@ -242,6 +239,8 @@ class Rails
         } else {
             $config['paths']['public_path'] = new Path($config['paths']['public_path']);
         }
+        
+        self::$publicPath = $config['paths']['public_path'];
         
         $config['paths']['app']    = new Path('app', $rootPath);
         $config['paths']['config'] = new Path('config', $rootPath);

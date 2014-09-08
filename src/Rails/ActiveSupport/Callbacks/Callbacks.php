@@ -207,11 +207,7 @@ class Callbacks
         };
         $invoker = $invoker->bindTo($runner, get_class($runner));
         
-        if ($kind == 'after') {
-            $callbacks = array_reverse($this->callbacks[$name][$kind]);
-        } else {
-            $callbacks = $this->callbacks[$name][$kind];
-        }
+        $callbacks = $this->callbacks[$name][$kind];
         
         foreach ($callbacks as $callable => $options) {
             # Case: [new Audit(), 'if' => ...]

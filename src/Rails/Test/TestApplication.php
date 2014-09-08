@@ -13,6 +13,7 @@ use Rails\ActiveRecord\Migration\Migrator;
 use Rails\ActiveRecord\Schema\Migration\Exporter;
 use Rails\ActiveRecord\Base as ActiveRecordBase;
 use Rails\FactoryGirl\FactoryGirl;
+use Rails\ActiveRecord\Mongo\Connection as MongoConnection;
 
 class TestApplication
 {
@@ -69,29 +70,28 @@ class TestApplication
             
             $adapter = $connManager->getAdapter($connName);
             
-            $params = $adapter->getDriver()->getConnection()->getConnectionParameters();
-            $filesDir = $application->config()['paths']['root']->expand('db');
-            
-            $schema = new Schema($adapter);
-            $schema->dropDatabase($params['database']);
-            $schema->createDatabase($params['database']);
-            
-            # Reset connection.
-            $connManager->removeAdapter($connName);
-            $adapter = $connManager->getAdapter($connName);
-            
-            $migrator = new Migrator($adapter, $filesDir);
-            $migrator->run();
-            
-            # Clear table data.
-            ActiveRecordBase::clearMetadatas();
-            ActiveRecordBase::clearModelSchemas();
-            SchemaMigration::setAdapter($adapter);
-            
-            // $fixturesFile = $application->config()['paths']['root']->expand('test', 'fixtures', 'fixtures.php');
-            
-            // # TODO: require outside of scope.
-            // require $fixturesFile;
+            if ($adapter instanceof MongoConnection) {
+                $adapter->database()->drop();
+            } else {
+                $params = $adapter->getDriver()->getConnection()->getConnectionParameters();
+                $filesDir = $application->config()['paths']['root']->expand('db');
+                
+                $schema = new Schema($adapter);
+                $schema->dropDatabase($params['database']);
+                $schema->createDatabase($params['database']);
+                
+                # Reset connection.
+                $connManager->removeAdapter($connName);
+                $adapter = $connManager->getAdapter($connName);
+                
+                $migrator = new Migrator($adapter, $filesDir);
+                $migrator->run();
+                
+                # Clear table data.
+                ActiveRecordBase::clearMetadatas();
+                ActiveRecordBase::clearModelSchemas();
+                SchemaMigration::setAdapter($adapter);
+            }
         }
     }
 }

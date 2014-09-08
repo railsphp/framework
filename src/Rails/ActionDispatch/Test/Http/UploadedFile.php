@@ -28,7 +28,7 @@ class UploadedFile extends \Rails\ActionDispatch\Http\UploadedFile
         $finfo = new finfo(FILEINFO_MIME_TYPE);
         return new self([
             'name'     => pathinfo($filePath, PATHINFO_BASENAME),
-            'type'     => $finfo->file($fielPath),
+            'type'     => $finfo->file($filePath),
             'tmp_name' => $filePath,
             'error'    => UPLOAD_ERR_OK,
             'size'     => filesize($filePath)

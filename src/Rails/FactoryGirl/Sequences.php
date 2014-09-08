@@ -27,6 +27,17 @@ class Sequences
         return $this->sequences[$name]();
     }
     
+    public function get($name)
+    {
+        if (!$this->exists($name)) {
+            throw new Exception\RuntimeException(sprintf(
+                "Sequence '%s' doesn't exists",
+                $name
+            ));
+        }
+        return $this->sequences[$name];
+    }
+    
     public function exists($name)
     {
         return isset($this->sequences[$name]);
