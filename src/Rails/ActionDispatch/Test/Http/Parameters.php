@@ -84,4 +84,16 @@ class Parameters extends Base
         
         return null;
     }
+    
+    public function reset()
+    {
+        $types = [
+            'get', 'post', 'put',
+            'patch', 'delete', 'otherVerb'
+        ];
+        foreach ($types as $type) {
+            $property = $type . 'Params';
+            $this->$property = [];
+        }
+    }
 }

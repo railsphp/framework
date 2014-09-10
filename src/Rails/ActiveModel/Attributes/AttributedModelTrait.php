@@ -190,28 +190,7 @@ trait AttributedModelTrait
     
     public function hasChanged()
     {
-        return $this->attributes->dirty()->hasChanged() || $this->embeddedAssocsChanged();
-    }
-    
-    public function embeddedAssocsChanged()
-    {
-        $changed = false;
-        foreach ($this->getAssociations()->embedded() as $type => $object) {
-            if ($type == 'hasMany') {
-                foreach ($object as $model) {
-                    if ($model->hasChanged()) {
-                        $changed = true;
-                        break 2;
-                    }
-                }
-            } else {
-                if ($object->hasChanged()) {
-                    $changed = true;
-                    break;
-                }
-            }
-        }
-        return $changed;
+        return $this->attributes->dirty()->hasChanged();
     }
     
     public function attributeChanged($attrName)

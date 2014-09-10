@@ -124,6 +124,11 @@ class FactoryGirl
         return $this->factories->get($factoryName)->create($extraAttrs);
     }
     
+    public function attributes($factoryName, array $extraAttrs = [])
+    {
+        return $this->factories->get($factoryName)->attributes($extraAttrs);
+    }
+    
     public function includeFactories(array $paths)
     {
         $includer = ClassTools::generateFileIncluder($this);

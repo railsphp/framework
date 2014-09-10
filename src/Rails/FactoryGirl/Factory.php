@@ -27,9 +27,9 @@ class Factory
         $this->setLazyAttributes();
     }
     
-    public function attributes()
+    public function attributes(array $extraAttrs = [])
     {
-        return $this->attributeValues();
+        return array_merge($this->attributeValues(), $extraAttrs);
     }
     
     public function build(array $extraAttrs = [])

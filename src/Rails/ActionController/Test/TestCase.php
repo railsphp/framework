@@ -64,6 +64,7 @@ abstract class TestCase extends BaseTestCase
         $path = $this->ensureRouteExists($controllerClass, $actionName, $customParams);
         
         $response = new TestResponse();
+        $this->parameters->reset();
         $this->setCustomRequestParams($this->parameters, $method, $customParams);
         
         $appClone = clone $this->application();
