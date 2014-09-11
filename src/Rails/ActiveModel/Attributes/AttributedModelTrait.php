@@ -169,7 +169,8 @@ trait AttributedModelTrait
                     $this->{$accProps[$attrName]['propName']} = $value;
                 } else {
                     if ($accProps[$attrName][1]) {
-                        $this->$attrName($value);
+                        $setterMethod = $accProps[$attrName][1];
+                        $this->$setterMethod($value);
                     }
                 }
                 unset($attributes[$attrName]);

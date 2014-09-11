@@ -3,6 +3,7 @@ namespace Rails\ActionDispatch\Test\Http;
 
 use Rails\ActionDispatch\Http\Request as Base;
 use Rails\ActionDispatch\Http\Cookies\CookieJar;
+use Rails\ActionDispatch\Http\UploadedFiles;
 
 class Request extends Base
 {
@@ -54,5 +55,15 @@ class Request extends Base
     {
         $this->cookieJar = new CookieJar([]);
         return $this;
+    }
+    
+    public function resetUploadedFiles(array $files)
+    {
+        $this->files = $files;
+    }
+    
+    public function uploadedFiles()
+    {
+        return $this->files;
     }
 }

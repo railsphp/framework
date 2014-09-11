@@ -42,7 +42,7 @@ class UploadedFiles
         
         foreach ($arr['name'] as $k => $value) {
             if (is_string($value)) {
-                if ($arr['error'] != UPLOAD_ERR_NO_FILE) {
+                if ($arr['error'][$k] != UPLOAD_ERR_NO_FILE) {
                     $arranged[$k] = new UploadedFile([
                         'name'     => $value,
                         'type'     => $arr['type'][$k],

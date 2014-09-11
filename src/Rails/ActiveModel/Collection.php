@@ -22,7 +22,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     
     public function offsetExists($offset)
     {
-        return isset($this->members[$offset]);
+        return array_key_exists($offset, $this->members);
     }
     
     public function offsetUnset($offset)

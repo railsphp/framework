@@ -102,7 +102,7 @@ class AccessibleProperties
                     ($method = $refl->getMethod($getterMethodName)) &&
                     $method->isPublic()
                 ) {
-                    $params[] = true;
+                    $params[] = $getterMethodName;
                 } else {
                     $params[] = false;
                 }
@@ -113,7 +113,7 @@ class AccessibleProperties
                     ($method = $refl->getMethod($setterMethodName)) &&
                     $method->isPublic()
                 ) {
-                    $params[] = true;
+                    $params[] = $setterMethodName;
                 } else {
                     $params[] = false;
                 }

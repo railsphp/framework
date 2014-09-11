@@ -71,6 +71,7 @@ abstract class TestCase extends BaseTestCase
         $appRefl  = new ReflectionClass(get_class($appClone));
         
         $response->setCookieJar($this->request->cookieJar());
+        $this->request->resetUploadedFiles($customParams);
         
         foreach(['request', 'parameters', 'session', 'response'] as $propName) {
             $prop = $appRefl->getProperty($propName);
@@ -109,7 +110,10 @@ abstract class TestCase extends BaseTestCase
      */
     protected function ensureRouteExists($controllerClass, $actionName, array $parameters)
     {
-        $nameParts = array_map(function($part) { return lcfirst($part); }, explode('\\', preg_replace('/Controller$/', '', $controllerClass)));
+        $nameParts = array_map(
+            function($part) { return lcfirst($part); },
+            explode('\\', preg_replace('/Controller$/', '', $controllerClass))
+        );
         
         $normalizedControllerName = implode(ActionToken::NAMESPACE_SEPARATOR, $nameParts);
         $tokenParams = [
