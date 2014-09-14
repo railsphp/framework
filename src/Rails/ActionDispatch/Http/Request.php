@@ -319,7 +319,7 @@ class Request
         if (is_array($files)) {
             return $files;
         }
-        return null;
+        return [];
     }
     
     protected function mapKeysToUploadedFiles(array $keys)

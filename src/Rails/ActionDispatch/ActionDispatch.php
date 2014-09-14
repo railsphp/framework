@@ -17,6 +17,10 @@ class ActionDispatch
     {
         $app = $this->application;
         
+        if (strtolower($method) == 'post' && isset($_POST['_method'])) {
+            $method = $_POST['_method'];
+        }
+        
         $app->getService('log')->setRequest($app->request());
         
         $routeParams = $app->routes()->match(
