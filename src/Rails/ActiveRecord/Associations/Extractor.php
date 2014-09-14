@@ -63,8 +63,23 @@ class Extractor
         return $associations;
     }
     
-    
-
+    /**
+     * Under the following case, when specifing both the polymorphic interface
+     * (the "as" option) and the className to use, the foreign key will resolve
+     * using the "as" option:
+     *
+     * ```
+     * 'hasOne' => [
+     *     'foo' => [
+     *         'className' => 'FooClass',
+     *         'as' => 'fooable' // foreign key will be "fooable_id"
+     *     ]
+     * ]
+     * ```
+     *
+     * This means that, to follow the default conventions, the "as" option must
+     * be underscored.
+     */
     protected function normalizeAssociationOptions($type, $name, array $options, $class)
     {
         $options['type']    = $type;
@@ -97,9 +112,13 @@ class Extractor
             
             case 'hasOne':
                 if (!isset($options['foreignKey'])) {
-                    $options['foreignKey'] = $inflector->singularize(
-                        $class::tableName()
-                    ) . '_id';
+                    if (!empty($options['as'])) {
+                        $options['foreignKey'] = $options['as'] . '_id';
+                    } else {
+                        $options['foreignKey'] = $inflector->singularize(
+                            $class::tableName()
+                        ) . '_id';
+                    }
                 }
                 break;
             
