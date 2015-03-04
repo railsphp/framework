@@ -16,7 +16,7 @@ class FormFor
         $inf = $baseHelper->getService('inflector');
         $modelClass = get_class($model);
         $controller = str_replace('/', ActionToken::NAMESPACE_SEPARATOR,
-                        $inf->underscore(
+                        lcfirst(
                             $inf->pluralize($modelClass)
                         ));
         

@@ -148,6 +148,13 @@ class RouteSet implements \ArrayAccess, \IteratorAggregate
             }
         }
         
+        $routeParams = implode(', ', array_map(function($name, $val) { return $name . '=>' . $val; }, array_keys($options), $options));
+        $message = "Couldn't find route '%s' and options { %s }";
+        throw new Exception\InvalidArgumentException(sprintf(
+            $message,
+            $token->toString(),
+            $routeParams
+        ));
         # TODO: invalid argument exception?
         return false;
     }
